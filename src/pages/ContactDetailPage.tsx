@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import ContactForm from "@/components/contacts/ContactForm";
-import { Phone, Mail, Building, MapPin, Globe, Calendar, Trash2, Edit } from "lucide-react";
+import { Phone, Mail, Building, MapPin, Globe, Calendar, Trash2, Edit, UserRound } from "lucide-react";
 import { useState } from "react";
 import { ContactRecord } from "@/services/airtable-service";
 import {
@@ -28,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +45,7 @@ const ContactDetailPage = () => {
 
   const handleSubmit = async (data: ContactRecord) => {
     try {
+      console.log("Updating contact with data:", data);
       await updateContact.mutateAsync(data);
       setIsEditing(false);
     } catch (error) {
@@ -196,164 +198,157 @@ const ContactDetailPage = () => {
           isLoading={updateContact.isPending}
         />
       ) : (
-        <Tabs defaultValue="info">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="info">Información</TabsTrigger>
-            <TabsTrigger value="actions">Acciones</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="info" className="pt-4">
-            <div className="mb-6 flex items-center">
-              {contact.fields["Tarjeta Escaneada"] && 
-               contact.fields["Tarjeta Escaneada"].length > 0 ? (
-                <div className="w-20 h-20 rounded-full overflow-hidden mr-4">
-                  <img
-                    src={contact.fields["Tarjeta Escaneada"][0]}
-                    alt={contact.fields.Nombre}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-primary/10 mr-4 flex items-center justify-center">
-                  <span className="text-primary text-xl font-medium">
-                    {contact.fields.Nombre?.charAt(0) || "?"}
-                  </span>
-                </div>
-              )}
-              <div>
-                <h1 className="text-2xl font-medium text-text-title mb-1">
-                  {contact.fields.Nombre || "Sin nombre"}
-                </h1>
-                <p className="text-text-body">
-                  {contact.fields.Cargo || "Sin cargo"}
-                </p>
+        <div className="space-y-6">
+          <div className="mb-6 flex items-center">
+            {contact.fields["Tarjeta Escaneada"] && 
+             contact.fields["Tarjeta Escaneada"].length > 0 ? (
+              <div className="w-20 h-20 rounded-full overflow-hidden mr-4">
+                <img
+                  src={contact.fields["Tarjeta Escaneada"][0]}
+                  alt={contact.fields.Nombre}
+                  className="w-full h-full object-cover"
+                />
               </div>
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-primary/10 mr-4 flex items-center justify-center">
+                <UserRound className="h-10 w-10 text-primary" />
+              </div>
+            )}
+            <div>
+              <h1 className="text-2xl font-medium text-text-title mb-1">
+                {contact.fields.Nombre || "Sin nombre"}
+              </h1>
+              <p className="text-text-body">
+                {contact.fields.Cargo || "Sin cargo"}
+              </p>
             </div>
+          </div>
 
-            <div className="space-y-4">
-              {contact.fields.Email && (
-                <div className="flex items-center">
-                  <Mail size={18} className="mr-3 text-gray-500" />
-                  <span>{contact.fields.Email}</span>
+          <div className="space-y-4">
+            {contact.fields.Email && (
+              <div className="flex items-center">
+                <Mail size={18} className="mr-3 text-gray-500" />
+                <span>{contact.fields.Email}</span>
+              </div>
+            )}
+
+            {contact.fields.Telefono && (
+              <div className="flex items-center">
+                <Phone size={18} className="mr-3 text-gray-500" />
+                <span>{contact.fields.Telefono}</span>
+              </div>
+            )}
+
+            {companyName && (
+              <div className="flex items-center">
+                <Building size={18} className="mr-3 text-gray-500" />
+                <span>{companyName}</span>
+              </div>
+            )}
+
+            {(locationName || sectorName) && (
+              <div className="flex items-center">
+                <MapPin size={18} className="mr-3 text-gray-500" />
+                <span>
+                  {locationName || ""}{" "}
+                  {locationName && sectorName ? " - " : ""}
+                  {sectorName || ""}
+                </span>
+              </div>
+            )}
+
+            {contact.fields.Direccion && (
+              <div className="flex items-center">
+                <MapPin size={18} className="mr-3 text-gray-500" />
+                <span>
+                  {contact.fields.Direccion}
+                  {contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}
+                  {contact.fields.Pais && `, ${contact.fields.Pais}`}
+                </span>
+              </div>
+            )}
+
+            {contact.fields.Web && (
+              <div className="flex items-center">
+                <Globe size={18} className="mr-3 text-gray-500" />
+                <a
+                  href={
+                    contact.fields.Web.startsWith("http")
+                      ? contact.fields.Web
+                      : `https://${contact.fields.Web}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  {contact.fields.Web}
+                </a>
+              </div>
+            )}
+
+            {contact.fields.Fuente && (
+              <div className="flex items-start">
+                <div className="mt-1">
+                  <Calendar size={18} className="mr-3 text-gray-500" />
                 </div>
-              )}
-
-              {contact.fields.Telefono && (
-                <div className="flex items-center">
-                  <Phone size={18} className="mr-3 text-gray-500" />
-                  <span>{contact.fields.Telefono}</span>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Fuente</p>
+                  <p>{contact.fields.Fuente}</p>
                 </div>
-              )}
+              </div>
+            )}
+          </div>
 
-              {companyName && (
-                <div className="flex items-center">
-                  <Building size={18} className="mr-3 text-gray-500" />
-                  <span>{companyName}</span>
-                </div>
-              )}
-
-              {(locationName || sectorName) && (
-                <div className="flex items-center">
-                  <MapPin size={18} className="mr-3 text-gray-500" />
-                  <span>
-                    {locationName || ""}{" "}
-                    {locationName && sectorName ? " - " : ""}
-                    {sectorName || ""}
-                  </span>
-                </div>
-              )}
-
-              {contact.fields.Direccion && (
-                <div className="flex items-center">
-                  <MapPin size={18} className="mr-3 text-gray-500" />
-                  <span>
-                    {contact.fields.Direccion}
-                    {contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}
-                    {contact.fields.Pais && `, ${contact.fields.Pais}`}
-                  </span>
-                </div>
-              )}
-
-              {contact.fields.Web && (
-                <div className="flex items-center">
-                  <Globe size={18} className="mr-3 text-gray-500" />
-                  <a
-                    href={
-                      contact.fields.Web.startsWith("http")
-                        ? contact.fields.Web
-                        : `https://${contact.fields.Web}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline"
-                  >
-                    {contact.fields.Web}
-                  </a>
-                </div>
-              )}
-
-              {contact.fields.Fuente && (
-                <div className="flex items-start">
-                  <div className="mt-1">
-                    <Calendar size={18} className="mr-3 text-gray-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Fuente</p>
-                    <p>{contact.fields.Fuente}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="actions" className="pt-4">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="mt-8">
+            <h2 className="text-lg font-medium mb-3">Acciones</h2>
+            <div className="grid grid-cols-4 gap-2">
               <Button
                 onClick={handleCall}
                 disabled={!contact.fields.Telefono}
-                className="flex flex-col items-center py-6 h-auto"
+                variant="default"
+                className="bg-primary/90 hover:bg-primary"
               >
-                <Phone size={24} className="mb-2" />
-                <span>Llamar</span>
+                <Phone size={16} className="mb-1" />
+                <span className="text-xs">Llamar</span>
               </Button>
 
               <Button
                 onClick={handleEmail}
                 disabled={!contact.fields.Email}
-                className="flex flex-col items-center py-6 h-auto"
+                variant="default"
+                className="bg-primary/90 hover:bg-primary"
               >
-                <Mail size={24} className="mb-2" />
-                <span>Enviar Email</span>
+                <Mail size={16} className="mb-1" />
+                <span className="text-xs">Email</span>
               </Button>
 
               <Button
                 onClick={handleWhatsApp}
                 disabled={!contact.fields.Telefono}
-                className="flex flex-col items-center py-6 h-auto"
-                variant="outline"
+                variant="default"
+                className="bg-primary/90 hover:bg-primary"
               >
                 <svg
                   viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                  className="mb-2 fill-current"
+                  width="16"
+                  height="16"
+                  className="mb-1 fill-current"
                 >
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
-                <span>WhatsApp</span>
+                <span className="text-xs">WhatsApp</span>
               </Button>
 
               <Button
                 onClick={handleAddToContacts}
-                className="flex flex-col items-center py-6 h-auto"
-                variant="outline"
+                variant="default"
+                className="bg-primary/90 hover:bg-primary"
               >
                 <svg
                   viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                  className="mb-2 fill-current"
-                  fill="none"
+                  width="16"
+                  height="16"
+                  className="mb-1 fill-none stroke-current"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
@@ -365,11 +360,11 @@ const ContactDetailPage = () => {
                   <path d="m9 10 3-3 3 3" />
                   <path d="M12 13V7" />
                 </svg>
-                <span>Añadir a agenda</span>
+                <span className="text-xs">Añadir</span>
               </Button>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       )}
     </MainLayout>
   );

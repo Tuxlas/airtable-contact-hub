@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 const AIRTABLE_API_KEY = "pat9tJ0oxUIgtnzoq.fd104ea0b4866aa88fc66f2ab2c10d7ecf9507b1662873bff43c991978b733f6";
@@ -55,6 +54,7 @@ export type SectorRecord = {
 export const airtableService = {
   async fetchRecords<T>(tableName: string): Promise<AirtableRecord<T>[]> {
     try {
+      console.log(`Fetching records from ${tableName}...`);
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
@@ -63,16 +63,19 @@ export const airtableService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Error fetching ${tableName}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Error fetching ${tableName}: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error fetching ${tableName}: ${response.statusText} (${response.status})`);
       }
 
       const data = await response.json();
+      console.log(`Successfully fetched ${data.records.length} records from ${tableName}`);
       return data.records;
     } catch (error) {
       console.error(`Error fetching ${tableName}:`, error);
       toast({
-        title: "Error",
-        description: `No se pudieron cargar los datos de ${tableName}`,
+        title: "Error de conexión",
+        description: `No se pudieron cargar los datos de ${tableName}. Verifica la conexión con Airtable.`,
         variant: "destructive",
       });
       return [];
@@ -81,6 +84,7 @@ export const airtableService = {
 
   async fetchRecord<T>(tableName: string, recordId: string): Promise<AirtableRecord<T> | null> {
     try {
+      console.log(`Fetching record ${recordId} from ${tableName}...`);
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
@@ -89,15 +93,19 @@ export const airtableService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Error fetching record: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Error fetching record from ${tableName}: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error fetching record: ${response.statusText} (${response.status})`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log(`Successfully fetched record ${recordId} from ${tableName}`);
+      return data;
     } catch (error) {
       console.error(`Error fetching record from ${tableName}:`, error);
       toast({
         title: "Error",
-        description: `No se pudo cargar el registro de ${tableName}`,
+        description: `No se pudo cargar el registro de ${tableName}. Verifica la conexión con Airtable.`,
         variant: "destructive",
       });
       return null;
@@ -106,6 +114,7 @@ export const airtableService = {
 
   async createRecord<T>(tableName: string, fields: T): Promise<AirtableRecord<T> | null> {
     try {
+      console.log(`Creating record in ${tableName}...`, fields);
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
@@ -116,10 +125,13 @@ export const airtableService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Error creating record: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Error creating record in ${tableName}: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error creating record: ${response.statusText} (${response.status})`);
       }
 
       const data = await response.json();
+      console.log(`Successfully created record in ${tableName}`);
       toast({
         title: "Éxito",
         description: `Registro creado correctamente en ${tableName}`,
@@ -129,7 +141,7 @@ export const airtableService = {
       console.error(`Error creating record in ${tableName}:`, error);
       toast({
         title: "Error",
-        description: `No se pudo crear el registro en ${tableName}`,
+        description: `No se pudo crear el registro en ${tableName}. Verifica la conexión con Airtable.`,
         variant: "destructive",
       });
       return null;
@@ -138,6 +150,7 @@ export const airtableService = {
 
   async updateRecord<T>(tableName: string, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
     try {
+      console.log(`Updating record ${recordId} in ${tableName}...`, fields);
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
@@ -148,10 +161,13 @@ export const airtableService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Error updating record: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Error updating record in ${tableName}: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Error updating record: ${response.statusText} (${response.status})`);
       }
 
       const data = await response.json();
+      console.log(`Successfully updated record ${recordId} in ${tableName}`);
       toast({
         title: "Éxito",
         description: `Registro actualizado correctamente en ${tableName}`,
@@ -161,7 +177,7 @@ export const airtableService = {
       console.error(`Error updating record in ${tableName}:`, error);
       toast({
         title: "Error",
-        description: `No se pudo actualizar el registro en ${tableName}`,
+        description: `No se pudo actualizar el registro en ${tableName}. Verifica la conexión con Airtable.`,
         variant: "destructive",
       });
       return null;

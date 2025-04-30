@@ -1,11 +1,14 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { generateVCardQRCodeURL, downloadVCard } from "@/utils/vcard-utils";
+import { toast } from "@/hooks/use-toast";
+
+const STORAGE_KEY = "my_vcard_data";
 
 const MyVCardPage = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +20,25 @@ const MyVCardPage = () => {
   });
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
+  // Cargar datos guardados en localStorage al iniciar
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        setFormData(parsedData);
+        
+        // Regenerar el QR si había datos guardados
+        if (parsedData.name) {
+          const qrUrl = generateVCardQRCodeURL(parsedData);
+          setQrCodeUrl(qrUrl);
+        }
+      } catch (e) {
+        console.error("Error loading saved vCard data:", e);
+      }
+    }
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -26,8 +48,16 @@ const MyVCardPage = () => {
     e.preventDefault();
     if (!formData.name) return;
     
+    // Guardar en localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    
     const qrUrl = generateVCardQRCodeURL(formData);
     setQrCodeUrl(qrUrl);
+    
+    toast({
+      title: "vCard generada",
+      description: "Los datos se han guardado y la vCard se ha generado correctamente",
+    });
   };
 
   const handleDownload = () => {

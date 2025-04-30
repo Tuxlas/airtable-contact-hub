@@ -16,7 +16,7 @@ const DashboardPage = () => {
     return (
       <MainLayout title="Dashboard">
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-4 gap-2">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-32 w-full" />
             ))}
@@ -45,37 +45,37 @@ const DashboardPage = () => {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+      <div className="grid grid-cols-4 gap-2 mb-8">
+        <Card className="p-3 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-1">
             <User className="text-primary" size={20} />
           </div>
-          <p className="text-3xl font-bold text-text-title">{data.totalContacts}</p>
-          <p className="text-text-body">Contacts</p>
+          <p className="text-xl font-bold text-text-title">{data.totalContacts}</p>
+          <p className="text-xs text-text-body">Contactos</p>
         </Card>
 
-        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+        <Card className="p-3 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-1">
             <Building className="text-primary" size={20} />
           </div>
-          <p className="text-3xl font-bold text-text-title">{data.totalCompanies}</p>
-          <p className="text-text-body">Companies</p>
+          <p className="text-xl font-bold text-text-title">{data.totalCompanies}</p>
+          <p className="text-xs text-text-body">Empresas</p>
         </Card>
 
-        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+        <Card className="p-3 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-1">
             <MapPin className="text-primary" size={20} />
           </div>
-          <p className="text-3xl font-bold text-text-title">{data.totalLocations}</p>
-          <p className="text-text-body">Locations</p>
+          <p className="text-xl font-bold text-text-title">{data.totalLocations}</p>
+          <p className="text-xs text-text-body">Sedes</p>
         </Card>
 
-        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+        <Card className="p-3 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-1">
             <Grid2X2 className="text-primary" size={20} />
           </div>
-          <p className="text-3xl font-bold text-text-title">{data.totalSectors}</p>
-          <p className="text-text-body">Sectors</p>
+          <p className="text-xl font-bold text-text-title">{data.totalSectors}</p>
+          <p className="text-xs text-text-body">Sectores</p>
         </Card>
       </div>
 
@@ -92,21 +92,19 @@ const DashboardPage = () => {
                     className="flex items-center p-4 hover:bg-gray-50"
                   >
                     <div className="flex-shrink-0 mr-4">
-                      {contact.fields["Tarjeta Escaneada"] && contact.fields["Tarjeta Escaneada"].length > 0 ? (
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
-                          <img
-                            src={contact.fields["Tarjeta Escaneada"][0]}
-                            alt={contact.fields.Nombre}
-                            className="w-full h-full object-cover"
+                      <Avatar className="h-12 w-12">
+                        {contact.fields["Tarjeta Escaneada"] && contact.fields["Tarjeta Escaneada"].length > 0 ? (
+                          <AvatarImage 
+                            src={contact.fields["Tarjeta Escaneada"][0]} 
+                            alt={contact.fields.Nombre || "Contacto"} 
+                            className="object-cover"
                           />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10">
-                          <span className="text-primary text-lg font-medium">
-                            {contact.fields.Nombre?.charAt(0) || "?"}
-                          </span>
-                        </div>
-                      )}
+                        ) : (
+                          <AvatarFallback className="bg-primary/10">
+                            <UserRound className="h-6 w-6 text-primary" />
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base font-medium text-text-title truncate">
@@ -172,6 +170,28 @@ const DashboardPage = () => {
         )}
       </div>
     </MainLayout>
+  );
+};
+
+const Avatar = (props) => {
+  const { children, ...rest } = props;
+  return (
+    <div className={`relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full ${props.className || ""}`} {...rest}>
+      {children}
+    </div>
+  );
+};
+
+const AvatarImage = (props) => {
+  return <img className={`aspect-square h-full w-full ${props.className || ""}`} {...props} />;
+};
+
+const AvatarFallback = (props) => {
+  const { children, ...rest } = props;
+  return (
+    <div className={`flex h-full w-full items-center justify-center rounded-full bg-muted ${props.className || ""}`} {...rest}>
+      {children}
+    </div>
   );
 };
 
