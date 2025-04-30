@@ -1,11 +1,11 @@
-
 import MainLayout from "@/components/layout/MainLayout";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/hooks/use-airtable-queries";
-import { User, Building, MapPin, Grid2X2, ChevronRight } from "lucide-react";
+import { User, Building, MapPin, Grid2X2, ChevronRight, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const DashboardPage = () => {
   const { data, isLoading, isError } = useDashboardData();
