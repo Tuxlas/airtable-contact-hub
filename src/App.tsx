@@ -11,6 +11,7 @@ import CreateContactPage from "./pages/CreateContactPage";
 import MyVCardPage from "./pages/MyVCardPage";
 import CompaniesPage from "./pages/CompaniesPage";
 import DashboardPage from "./pages/DashboardPage";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +29,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<ContactsPage />} />
+          <Route path="/" element={<Index />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/contacts/:id" element={<ContactDetailPage />} />
           <Route path="/contacts/new" element={<CreateContactPage />} />

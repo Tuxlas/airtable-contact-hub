@@ -1,9 +1,9 @@
 
 import MainLayout from "@/components/layout/MainLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/hooks/use-airtable-queries";
-import { User, Building, MapPin, PieChart } from "lucide-react";
+import { User, Building, MapPin, Grid2X2, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
@@ -15,13 +15,12 @@ const DashboardPage = () => {
   if (isLoading) {
     return (
       <MainLayout title="Dashboard">
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-32 w-full" />
             ))}
           </div>
-          <Skeleton className="h-64 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
       </MainLayout>
@@ -46,98 +45,104 @@ const DashboardPage = () => {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <User size={14} className="mr-2" />
-              Contactos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-2xl font-semibold">{data.totalContacts}</p>
-          </CardContent>
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <User className="text-primary" size={20} />
+          </div>
+          <p className="text-3xl font-bold text-text-title">{data.totalContacts}</p>
+          <p className="text-text-body">Contacts</p>
         </Card>
 
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Building size={14} className="mr-2" />
-              Empresas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-2xl font-semibold">{data.totalCompanies}</p>
-          </CardContent>
+        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <Building className="text-primary" size={20} />
+          </div>
+          <p className="text-3xl font-bold text-text-title">{data.totalCompanies}</p>
+          <p className="text-text-body">Companies</p>
         </Card>
 
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <MapPin size={14} className="mr-2" />
-              Sedes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-2xl font-semibold">{data.totalLocations}</p>
-          </CardContent>
+        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <MapPin className="text-primary" size={20} />
+          </div>
+          <p className="text-3xl font-bold text-text-title">{data.totalLocations}</p>
+          <p className="text-text-body">Locations</p>
         </Card>
 
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <PieChart size={14} className="mr-2" />
-              Sectores
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-2xl font-semibold">{data.totalSectors}</p>
-          </CardContent>
+        <Card className="p-5 flex flex-col items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <Grid2X2 className="text-primary" size={20} />
+          </div>
+          <p className="text-3xl font-bold text-text-title">{data.totalSectors}</p>
+          <p className="text-text-body">Sectors</p>
         </Card>
       </div>
 
       <div className="space-y-6">
-        <Card>
-          <CardHeader className="p-4">
-            <CardTitle className="text-lg">
-              Últimos contactos añadidos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
+        <div>
+          <h2 className="text-xl font-semibold mb-4 text-text-title">Recent Contacts</h2>
+          <Card className="shadow-sm overflow-hidden">
             {data.recentContacts && data.recentContacts.length > 0 ? (
-              <ul className="space-y-2">
-                {data.recentContacts.map((contact) => (
-                  <li key={contact.id}>
-                    <Link
-                      to={`/contacts/${contact.id}`}
-                      className="flex justify-between hover:bg-gray-50 p-2 rounded"
-                    >
-                      <span className="font-medium">
+              <div>
+                {data.recentContacts.map((contact, index) => (
+                  <Link
+                    key={contact.id}
+                    to={`/contacts/${contact.id}`}
+                    className="flex items-center p-4 hover:bg-gray-50"
+                  >
+                    <div className="flex-shrink-0 mr-4">
+                      {contact.fields["Tarjeta Escaneada"] && contact.fields["Tarjeta Escaneada"].length > 0 ? (
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+                          <img
+                            src={contact.fields["Tarjeta Escaneada"][0]}
+                            alt={contact.fields.Nombre}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10">
+                          <span className="text-primary text-lg font-medium">
+                            {contact.fields.Nombre?.charAt(0) || "?"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-medium text-text-title truncate">
                         {contact.fields.Nombre || "Sin nombre"}
-                      </span>
-                      <span className="text-gray-500 text-sm">
-                        {new Date(contact.createdTime).toLocaleDateString()}
-                      </span>
-                    </Link>
-                  </li>
+                      </h3>
+                      <p className="text-sm text-text-body truncate">
+                        {contact.fields.Empresa && contact.fields.Empresa.length > 0 
+                          ? contact.fields.Empresa[0] 
+                          : contact.fields.Cargo || ""}
+                      </p>
+                      <p className="text-sm text-text-body truncate">
+                        {contact.fields.Email}
+                      </p>
+                      <p className="text-sm text-text-body truncate">
+                        {contact.fields.Telefono}
+                      </p>
+                    </div>
+                    <ChevronRight className="text-gray-400" size={20} />
+                    {index !== data.recentContacts.length - 1 && (
+                      <div className="absolute left-16 right-4 bottom-0 h-px bg-gray-100"></div>
+                    )}
+                  </Link>
                 ))}
-              </ul>
+              </div>
             ) : (
               <p className="text-gray-500 text-center py-4">
                 No hay contactos registrados
               </p>
             )}
-          </CardContent>
-        </Card>
+          </Card>
+        </div>
 
-        <Card>
-          <CardHeader className="p-4">
-            <CardTitle className="text-lg">
-              Distribución de empresas por sector
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            {data.companiesBySector && data.companiesBySector.length > 0 ? (
+        {data.companiesBySector && data.companiesBySector.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-text-title">Distribución de empresas por sector</h2>
+            <Card className="p-4 shadow-sm">
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsPieChart>
@@ -162,13 +167,9 @@ const DashboardPage = () => {
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">
-                No hay datos de sectores disponibles
-              </p>
-            )}
-          </CardContent>
-        </Card>
+            </Card>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { Phone, Mail, Building } from "lucide-react";
+import { Phone, Mail, Building, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ContactRecord } from "@/services/airtable-service";
 import { AirtableRecord } from "@/services/airtable-service";
@@ -11,13 +11,16 @@ interface ContactCardProps {
 
 const ContactCard = ({ contact }: ContactCardProps) => {
   const { Nombre, Cargo, Email, Telefono } = contact.fields;
+  const empresaNombre = contact.fields.Empresa && contact.fields.Empresa.length > 0 
+    ? contact.fields.Empresa[0] 
+    : null;
 
   return (
-    <Card className="p-4 mb-4 card-shadow hover:shadow-lg transition-shadow">
-      <Link to={`/contacts/${contact.id}`} className="block">
-        <div className="flex items-center mb-3">
+    <Card className="mb-4 shadow-sm overflow-hidden">
+      <Link to={`/contacts/${contact.id}`} className="flex items-center p-4 hover:bg-gray-50 relative">
+        <div className="flex-shrink-0 mr-4">
           {contact.fields["Tarjeta Escaneada"] && contact.fields["Tarjeta Escaneada"].length > 0 ? (
-            <div className="w-12 h-12 rounded-full overflow-hidden mr-3 bg-gray-200">
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
               <img
                 src={contact.fields["Tarjeta Escaneada"][0]}
                 alt={Nombre}
@@ -25,37 +28,32 @@ const ContactCard = ({ contact }: ContactCardProps) => {
               />
             </div>
           ) : (
-            <div className="w-12 h-12 rounded-full mr-3 bg-primary/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10">
               <span className="text-primary text-lg font-medium">
                 {Nombre?.charAt(0) || "?"}
               </span>
             </div>
           )}
-          <div>
-            <h3 className="font-medium text-text-title">{Nombre || "Sin nombre"}</h3>
-            <p className="text-sm text-text-body">{Cargo || "Sin cargo"}</p>
-          </div>
         </div>
-        <div className="space-y-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-medium text-text-title truncate">
+            {Nombre || "Sin nombre"}
+          </h3>
+          <p className="text-sm text-text-body">
+            {empresaNombre || Cargo || ""}
+          </p>
           {Email && (
-            <div className="flex items-center text-sm">
-              <Mail size={14} className="mr-2 text-gray-500" />
-              <span className="truncate">{Email}</span>
-            </div>
+            <p className="text-sm text-text-body truncate">
+              {Email}
+            </p>
           )}
           {Telefono && (
-            <div className="flex items-center text-sm">
-              <Phone size={14} className="mr-2 text-gray-500" />
-              <span>{Telefono}</span>
-            </div>
-          )}
-          {contact.fields.Empresa && contact.fields.Empresa.length > 0 && (
-            <div className="flex items-center text-sm">
-              <Building size={14} className="mr-2 text-gray-500" />
-              <span className="truncate">ID: {contact.fields.Empresa[0]}</span>
-            </div>
+            <p className="text-sm text-text-body">
+              {Telefono}
+            </p>
           )}
         </div>
+        <ChevronRight className="text-gray-400" size={20} />
       </Link>
     </Card>
   );
