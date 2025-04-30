@@ -1,17 +1,37 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ContactCard from "@/components/contacts/ContactCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useContacts } from "@/hooks/use-airtable-queries";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus } from "lucide-react";
+import { Plus, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const ContactsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: contacts, isLoading } = useContacts();
+  const { data: contacts, isLoading, isError, error } = useContacts();
+
+  useEffect(() => {
+    // Mostrar mensaje si hay un error en la carga de datos
+    if (isError) {
+      console.error("Error al cargar contactos:", error);
+      toast({
+        title: "Error de conexión",
+        description: "No se pudieron cargar los contactos desde Airtable. Verifica tu conexión.",
+        variant: "destructive",
+      });
+    }
+  }, [isError, error]);
+
+  // Debugging para verificar datos
+  useEffect(() => {
+    if (contacts) {
+      console.log("Contactos cargados:", contacts.length);
+    }
+  }, [contacts]);
 
   const filteredContacts = contacts?.filter((contact) => {
     const searchLower = searchQuery.toLowerCase();
@@ -44,6 +64,14 @@ const ContactsPage = () => {
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-28 w-full" />
           ))}
+        </div>
+      ) : isError ? (
+        <div className="text-center py-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
+            <AlertCircle className="h-6 w-6 text-red-600" />
+          </div>
+          <p className="text-gray-500 mb-2">Error al cargar los contactos</p>
+          <p className="text-sm text-gray-400">Verifica la conexión con Airtable</p>
         </div>
       ) : filteredContacts && filteredContacts.length > 0 ? (
         <div>
