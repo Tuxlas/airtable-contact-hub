@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,15 +20,22 @@ export default {
 		},
 		extend: {
 			colors: {
+				primary: "#BE1E2D",
+				"primary-foreground": "#FFFFFF",
+				background: {
+					light: "#FCFCFC",
+					dark: "#343538",
+				},
+				text: {
+					title: "#3B3B3B",
+					body: "#5E5E5E",
+					light: "#FFFFFF",
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
-				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
-				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
