@@ -41,8 +41,18 @@ const ContactDetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmit = async (data: ContactRecord) => {
+    const cleanData: ContactRecord = {
+      ...data,
+      Empresa: data.Empresa || [],
+      Sede: data.Sede || [],
+      Sector: data.Sector || [],
+      Telefono: data.Telefono || "",
+      Direccion: data.Direccion || "",
+      Pais: data.Pais || "",
+    };
+
     try {
-      await updateContact.mutateAsync(data);
+      await updateContact.mutateAsync(cleanData);
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating contact:", error);
@@ -77,19 +87,19 @@ const ContactDetailPage = () => {
 
   const handleCall = () => {
     if (contact?.fields.Telefono) {
-      window.location.href = `tel:${contact.fields.Telefono}`;
+      window.location.href = `tel:${contact?.fields.Telefono}`;
     }
   };
 
   const handleEmail = () => {
     if (contact?.fields.Email) {
-      window.location.href = `mailto:${contact.fields.Email}`;
+      window.location.href = `mailto:${contact?.fields.Email}`;
     }
   };
 
   const handleWhatsApp = () => {
     if (contact?.fields.Telefono) {
-      const phone = contact.fields.Telefono.replace(/\D/g, "");
+      const phone = contact?.fields.Telefono.replace(/\D/g, "");
       window.open(`https://wa.me/${phone}`, "_blank");
     }
   };
@@ -228,4 +238,5 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
 
