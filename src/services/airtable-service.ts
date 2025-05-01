@@ -57,6 +57,73 @@ export type SectorRecord = {
   Contactos?: string[];
 };
 
+// ---------------------------
+// SANITIZER GLOBAL
+// ---------------------------
+
+const RECORD_FIELDS = {
+  Contactos: [
+    "Nombre",
+    "Apellidos",
+    "Cargo",
+    "Email",
+    "Telefono",
+    "Empresa",
+    "Sede",
+    "Sector",
+    "Direccion",
+    "Ciudad",
+    "Pais",
+    "Fuente",
+    "TarjetaEscaneada",
+    "FechaCreacion",
+    "WebEmpresa",
+    "SectorName",
+  ],
+  Empresas: [
+    "NombreEmpresa",
+    "Sector",
+    "WebEmpresa",
+    "Sedes",
+    "NumeroSedes",
+    "Tags",
+    "NumeroContactos",
+    "Contactos",
+    "FechaCreacion",
+  ],
+  Sedes: [
+    "Ciudad",
+    "Empresa",
+    "Pais",
+    "Direccion",
+    "TotalContactos",
+    "Contactos",
+  ],
+  Sectores: [
+    "NombreSector",
+    "Empresas",
+    "NumeroEmpresas",
+    "Contactos",
+  ],
+};
+
+const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
+  const allowedFields = RECORD_FIELDS[tableName];
+  const sanitized: any = {};
+
+  allowedFields.forEach((field) => {
+    if (data[field] !== undefined) {
+      sanitized[field] = data[field];
+    }
+  });
+
+  return sanitized;
+};
+
+// ---------------------------
+// AIRTABLE SERVICE
+// ---------------------------
+
 export const airtableService = {
   async fetchRecords<T>(tableName: string): Promise<AirtableRecord<T>[]> {
     try {
@@ -104,15 +171,17 @@ export const airtableService = {
     }
   },
 
-  async createRecord<T>(tableName: string, fields: T): Promise<AirtableRecord<T> | null> {
+  async createRecord<T>(tableName: keyof typeof RECORD_FIELDS, fields: T): Promise<AirtableRecord<T> | null> {
     try {
+      const sanitizedFields = sanitizeRecord(tableName, fields);
+
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({ fields: sanitizedFields }),
       });
 
       if (!response.ok) throw new Error(`Error creating record`);
@@ -133,15 +202,17 @@ export const airtableService = {
     }
   },
 
-  async updateRecord<T>(tableName: string, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
+  async updateRecord<T>(tableName: keyof typeof RECORD_FIELDS, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
     try {
+      const sanitizedFields = sanitizeRecord(tableName, fields);
+
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({ fields: sanitizedFields }),
       });
 
       if (!response.ok) {
@@ -214,5 +285,6 @@ export const airtableService = {
     }
   },
 };
+
 
 
