@@ -57,6 +57,9 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       Fuente: initialData?.fields.Fuente || "",
       WebEmpresa: initialData?.fields.WebEmpresa || "",
       SectorName: initialData?.fields.SectorName || "",
+      Empresa: initialData?.fields.Empresa || [],
+      Sede: initialData?.fields.Sede || [],
+      Sector: initialData?.fields.Sector || [],
     },
   });
 
@@ -82,10 +85,21 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   };
 
   const handleSubmit = (data: ContactRecord) => {
+    const cleanData: ContactRecord = {
+      ...data,
+      Telefono: data.Telefono || "",
+      Direccion: data.Direccion || "",
+      Pais: data.Pais || "",
+      Empresa: data.Empresa || [],
+      Sede: data.Sede || [],
+      Sector: data.Sector || [],
+    };
+
     if (imagePreview) {
-      data.TarjetaEscaneada = [imagePreview];
+      cleanData.TarjetaEscaneada = [imagePreview];
     }
-    onSubmit(data);
+
+    onSubmit(cleanData);
   };
 
   return (
@@ -121,70 +135,33 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="Nombre"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre*</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nombre" {...field} required />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Apellidos"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Apellidos</FormLabel>
-                <FormControl>
-                  <Input placeholder="Apellidos" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Cargo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cargo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Cargo" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="Email" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Telefono"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefono</FormLabel>
-                <FormControl>
-                  <Input placeholder="Telefono" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          {[
+            { name: "Nombre", label: "Nombre*" },
+            { name: "Apellidos", label: "Apellidos" },
+            { name: "Cargo", label: "Cargo" },
+            { name: "Email", label: "Email" },
+            { name: "Telefono", label: "Teléfono" },
+            { name: "Direccion", label: "Dirección" },
+            { name: "Ciudad", label: "Ciudad" },
+            { name: "Pais", label: "País" },
+            { name: "Web", label: "Web" },
+            { name: "WebEmpresa", label: "Web de la Empresa" },
+            { name: "Fuente", label: "Fuente" },
+          ].map(({ name, label }) => (
+            <FormField
+              key={name}
+              control={form.control}
+              name={name as keyof ContactRecord}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{label}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={label} {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          ))}
 
           <FormItem>
             <FormLabel>Empresa</FormLabel>
@@ -248,84 +225,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               </SelectContent>
             </Select>
           </FormItem>
-
-          <FormField
-            control={form.control}
-            name="Direccion"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Direccion</FormLabel>
-                <FormControl>
-                  <Input placeholder="Direccion" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Ciudad"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Ciudad</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ciudad" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Pais"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Pais</FormLabel>
-                <FormControl>
-                  <Input placeholder="Pais" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Web"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Web</FormLabel>
-                <FormControl>
-                  <Input placeholder="Sitio web" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="WebEmpresa"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Web de la Empresa</FormLabel>
-                <FormControl>
-                  <Input placeholder="Web de la empresa" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="Fuente"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fuente</FormLabel>
-                <FormControl>
-                  <Input placeholder="Fuente del contacto" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
         </div>
 
         <div className="flex justify-end">
@@ -339,3 +238,4 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
