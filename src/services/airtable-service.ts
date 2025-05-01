@@ -1,6 +1,6 @@
 import { toast } from "@/hooks/use-toast";
 
-const AIRTABLE_API_KEY = "pat9tJ0oxUIgtnzoq.fd104ea0b4866aa88fc66f2ab2c10d7ecf9507b1662873bff43c991978b733f6";
+const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN!;
 const AIRTABLE_BASE_ID = "appVbaOLrHQGOQlgC";
 const AIRTABLE_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
 
@@ -129,7 +129,7 @@ export const airtableService = {
     try {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+          Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       });
@@ -152,7 +152,7 @@ export const airtableService = {
     try {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+          Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       });
@@ -178,7 +178,7 @@ export const airtableService = {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+          Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ fields: sanitizedFields }),
@@ -209,7 +209,7 @@ export const airtableService = {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+          Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ fields: sanitizedFields }),
@@ -250,7 +250,7 @@ export const airtableService = {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+          Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       });
@@ -285,6 +285,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
