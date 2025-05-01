@@ -14,231 +14,158 @@ export const TABLES = {
   COMPANIES: "Empresas",
   LOCATIONS: "Sedes",
   SECTORS: "Sectores",
-};
+} as const;
 
-// CONTACTOS -------------------------
+// ---------------------------
+// HELPERS → Mutations Factory
+// ---------------------------
+
+function useCreateRecord<T>(tableName: keyof typeof TABLES) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: T) => airtableService.createRecord<T>(tableName, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [tableName] }),
+  });
+}
+
+function useUpdateRecord<T>(tableName: keyof typeof TABLES, id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<T>) => airtableService.updateRecord<T>(tableName, id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [tableName] });
+      queryClient.invalidateQueries({ queryKey: [tableName, id] });
+    },
+  });
+}
+
+function useDeleteRecord(tableName: keyof typeof TABLES) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => airtableService.deleteRecord(tableName, id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [tableName] }),
+  });
+}
+
+// ---------------------------
+// CONTACTOS
+// ---------------------------
 
 export const useContacts = () =>
   useQuery({
-    queryKey: ["contacts"],
+    queryKey: [TABLES.CONTACTS],
     queryFn: () => airtableService.fetchRecords<ContactRecord>(TABLES.CONTACTS),
   });
 
 export const useContact = (id: string) =>
   useQuery({
-    queryKey: ["contact", id],
+    queryKey: [TABLES.CONTACTS, id],
     queryFn: () => airtableService.fetchRecord<ContactRecord>(TABLES.CONTACTS, id),
     enabled: !!id,
   });
 
-export const useCreateContact = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (contact: ContactRecord) =>
-      airtableService.createRecord<ContactRecord>(TABLES.CONTACTS, contact),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contacts"] }),
-  });
-};
+export const useCreateContact = () => useCreateRecord<ContactRecord>(TABLES.CONTACTS);
+export const useUpdateContact = (id: string) => useUpdateRecord<ContactRecord>(TABLES.CONTACTS, id);
+export const useDeleteContact = () => useDeleteRecord(TABLES.CONTACTS);
 
-export const useUpdateContact = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (contact: Partial<ContactRecord>) =>
-      airtableService.updateRecord<ContactRecord>(TABLES.CONTACTS, id, contact),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      queryClient.invalidateQueries({ queryKey: ["contact", id] });
-    },
-  });
-};
-
-export const useDeleteContact = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => airtableService.deleteRecord(TABLES.CONTACTS, id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contacts"] }),
-  });
-};
-
-// EMPRESAS -------------------------
+// ---------------------------
+// EMPRESAS
+// ---------------------------
 
 export const useCompanies = () =>
   useQuery({
-    queryKey: ["companies"],
+    queryKey: [TABLES.COMPANIES],
     queryFn: () => airtableService.fetchRecords<CompanyRecord>(TABLES.COMPANIES),
   });
 
 export const useCompany = (id: string) =>
   useQuery({
-    queryKey: ["company", id],
+    queryKey: [TABLES.COMPANIES, id],
     queryFn: () => airtableService.fetchRecord<CompanyRecord>(TABLES.COMPANIES, id),
     enabled: !!id,
   });
 
-export const useCreateCompany = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (company: CompanyRecord) =>
-      airtableService.createRecord<CompanyRecord>(TABLES.COMPANIES, company),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["companies"] }),
-  });
-};
+export const useCreateCompany = () => useCreateRecord<CompanyRecord>(TABLES.COMPANIES);
+export const useUpdateCompany = (id: string) => useUpdateRecord<CompanyRecord>(TABLES.COMPANIES, id);
+export const useDeleteCompany = () => useDeleteRecord(TABLES.COMPANIES);
 
-export const useUpdateCompany = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (company: Partial<CompanyRecord>) =>
-      airtableService.updateRecord<CompanyRecord>(TABLES.COMPANIES, id, company),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
-      queryClient.invalidateQueries({ queryKey: ["company", id] });
-    },
-  });
-};
-
-export const useDeleteCompany = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => airtableService.deleteRecord(TABLES.COMPANIES, id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["companies"] }),
-  });
-};
-
-// SEDES -------------------------
+// ---------------------------
+// SEDES
+// ---------------------------
 
 export const useLocations = () =>
   useQuery({
-    queryKey: ["locations"],
+    queryKey: [TABLES.LOCATIONS],
     queryFn: () => airtableService.fetchRecords<SedeRecord>(TABLES.LOCATIONS),
   });
 
 export const useLocation = (id: string) =>
   useQuery({
-    queryKey: ["location", id],
+    queryKey: [TABLES.LOCATIONS, id],
     queryFn: () => airtableService.fetchRecord<SedeRecord>(TABLES.LOCATIONS, id),
     enabled: !!id,
   });
 
-export const useCreateLocation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (location: SedeRecord) =>
-      airtableService.createRecord<SedeRecord>(TABLES.LOCATIONS, location),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["locations"] }),
-  });
-};
+export const useCreateLocation = () => useCreateRecord<SedeRecord>(TABLES.LOCATIONS);
+export const useUpdateLocation = (id: string) => useUpdateRecord<SedeRecord>(TABLES.LOCATIONS, id);
+export const useDeleteLocation = () => useDeleteRecord(TABLES.LOCATIONS);
 
-export const useUpdateLocation = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (location: Partial<SedeRecord>) =>
-      airtableService.updateRecord<SedeRecord>(TABLES.LOCATIONS, id, location),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["locations"] });
-      queryClient.invalidateQueries({ queryKey: ["location", id] });
-    },
-  });
-};
-
-export const useDeleteLocation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => airtableService.deleteRecord(TABLES.LOCATIONS, id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["locations"] }),
-  });
-};
-
-// SECTORES -------------------------
+// ---------------------------
+// SECTORES
+// ---------------------------
 
 export const useSectors = () =>
   useQuery({
-    queryKey: ["sectors"],
+    queryKey: [TABLES.SECTORS],
     queryFn: () => airtableService.fetchRecords<SectorRecord>(TABLES.SECTORS),
   });
 
 export const useSector = (id: string) =>
   useQuery({
-    queryKey: ["sector", id],
+    queryKey: [TABLES.SECTORS, id],
     queryFn: () => airtableService.fetchRecord<SectorRecord>(TABLES.SECTORS, id),
     enabled: !!id,
   });
 
-export const useCreateSector = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (sector: SectorRecord) =>
-      airtableService.createRecord<SectorRecord>(TABLES.SECTORS, sector),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sectors"] }),
-  });
-};
+export const useCreateSector = () => useCreateRecord<SectorRecord>(TABLES.SECTORS);
+export const useUpdateSector = (id: string) => useUpdateRecord<SectorRecord>(TABLES.SECTORS, id);
+export const useDeleteSector = () => useDeleteRecord(TABLES.SECTORS);
 
-export const useUpdateSector = (id: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (sector: Partial<SectorRecord>) =>
-      airtableService.updateRecord<SectorRecord>(TABLES.SECTORS, id, sector),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sectors"] });
-      queryClient.invalidateQueries({ queryKey: ["sector", id] });
-    },
-  });
-};
-
-export const useDeleteSector = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => airtableService.deleteRecord(TABLES.SECTORS, id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sectors"] }),
-  });
-};
-
-// DASHBOARD -------------------------
+// ---------------------------
+// DASHBOARD
+// ---------------------------
 
 export const useDashboardData = () => {
-  const contactsQuery = useContacts();
-  const companiesQuery = useCompanies();
-  const locationsQuery = useLocations();
-  const sectorsQuery = useSectors();
+  const contacts = useContacts();
+  const companies = useCompanies();
+  const locations = useLocations();
+  const sectors = useSectors();
 
-  const isLoading =
-    contactsQuery.isLoading ||
-    companiesQuery.isLoading ||
-    locationsQuery.isLoading ||
-    sectorsQuery.isLoading;
-
-  const isError =
-    contactsQuery.isError ||
-    companiesQuery.isError ||
-    locationsQuery.isError ||
-    sectorsQuery.isError;
+  const isLoading = contacts.isLoading || companies.isLoading || locations.isLoading || sectors.isLoading;
+  const isError = contacts.isError || companies.isError || locations.isError || sectors.isError;
 
   const data = {
-    totalContacts: contactsQuery.data?.length || 0,
-    totalCompanies: companiesQuery.data?.length || 0,
-    totalLocations: locationsQuery.data?.length || 0,
-    totalSectors: sectorsQuery.data?.length || 0,
-    recentContacts: contactsQuery.data
-      ?.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
-      .slice(0, 5),
-    companiesBySector: sectorsQuery.data?.map((sector) => ({
+    totalContacts: contacts.data?.length || 0,
+    totalCompanies: companies.data?.length || 0,
+    totalLocations: locations.data?.length || 0,
+    totalSectors: sectors.data?.length || 0,
+    recentContacts: contacts.data?.slice(0, 5),
+    companiesBySector: sectors.data?.map((sector) => ({
       name: sector.fields.NombreSector || "Sin nombre",
       count: sector.fields.Empresas?.length || 0,
     })),
   };
 
-  return {
-    isLoading,
-    isError,
-    data,
-  };
+  return { isLoading, isError, data };
 };
 
-// UTILITY -------------------------
+// ---------------------------
+// UTILITY
+// ---------------------------
 
 export function useGetRecordById<T>(
   records: AirtableRecord<T>[] | undefined,
   id: string
 ): T | undefined {
-  if (!records || !id) return undefined;
-  return records.find((r) => r.id === id)?.fields;
+  return records?.find((r) => r.id === id)?.fields;
 }
