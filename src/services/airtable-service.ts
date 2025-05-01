@@ -2,10 +2,12 @@
 
 import { toast } from "@/hooks/use-toast";
 
+// Configuración de Airtable
 const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN!;
 const AIRTABLE_BASE_ID = "appVbaOLrHQGOQlgC";
 const AIRTABLE_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
 
+// Tipos
 export type AirtableRecord<T> = {
   id: string;
   fields: T;
@@ -25,7 +27,7 @@ export type ContactRecord = {
   Ciudad?: string;
   Pais?: string;
   Fuente?: string;
-  TarjetaEscaneada?: { url: string }[];
+  TarjetaEscaneada?: any[];
   FechaCreacion?: string;
   WebEmpresa?: string[];
   SectorName?: string[];
@@ -59,61 +61,97 @@ export type SectorRecord = {
   Contactos?: string[];
 };
 
+// Campos permitidos para sanitizar
 const RECORD_FIELDS = {
   Contactos: [
-    "Nombre", "Apellidos", "Cargo", "Email", "Telefono", "Empresa", "Sede", "Sector", "Direccion", "Ciudad", "Pais", "Fuente", "TarjetaEscaneada", "FechaCreacion", "WebEmpresa", "SectorName"
+    "Nombre",
+    "Apellidos",
+    "Cargo",
+    "Email",
+    "Telefono",
+    "Empresa",
+    "Sede",
+    "Sector",
+    "Direccion",
+    "Ciudad",
+    "Pais",
+    "Fuente",
+    "TarjetaEscaneada",
+    "FechaCreacion",
+    "WebEmpresa",
+    "SectorName",
   ],
   Empresas: [
-    "NombreEmpresa", "Sector", "WebEmpresa", "Sedes", "NumeroSedes", "Tags", "NumeroContactos", "Contactos", "FechaCreacion"
+    "NombreEmpresa",
+    "Sector",
+    "WebEmpresa",
+    "Sedes",
+    "NumeroSedes",
+    "Tags",
+    "NumeroContactos",
+    "Contactos",
+    "FechaCreacion",
   ],
-  Sedes: [
-    "Ciudad", "Empresa", "Pais", "Direccion", "TotalContactos", "Contactos"
-  ],
-  Sectores: [
-    "NombreSector", "Empresas", "NumeroEmpresas", "Contactos"
-  ]
+  Sedes: ["Ciudad", "Empresa", "Pais", "Direccion", "TotalContactos", "Contactos"],
+  Sectores: ["NombreSector", "Empresas", "NumeroEmpresas", "Contactos"],
 };
 
-function sanitizeRecord(tableName: keyof typeof RECORD_FIELDS, data: any) {
+// 🚨 IMPORTANTE → Exportar sanitizeRecord porque se usa desde fuera
+export const sanitizeRecord = (
+  tableName: keyof typeof RECORD_FIELDS,
+  data: any
+) => {
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
+
   allowedFields.forEach((field) => {
-    if (data[field] !== undefined) sanitized[field] = data[field];
+    if (data[field] !== undefined) {
+      sanitized[field] = data[field];
+    }
   });
+
   return sanitized;
-}
+};
+
+// ---------------------------
+// SERVICIO AIRTABLE
+// ---------------------------
 
 export const airtableService = {
   async fetchRecords<T>(tableName: string): Promise<AirtableRecord<T>[]> {
     try {
-      const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
+      const res = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         headers: {
           Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       });
-      if (!response.ok) throw new Error(`Error fetching ${tableName}`);
-      const data = await response.json();
+
+      if (!res.ok) throw new Error("Error fetching records");
+
+      const data = await res.json();
       return data.records;
-    } catch (error) {
-      toast({ title: "Error", description: `No se pudieron cargar ${tableName}.`, variant: "destructive" });
+    } catch {
+      toast({ title: "Error", description: `No se pudo cargar ${tableName}`, variant: "destructive" });
       return [];
     }
   },
 
   async fetchRecord<T>(tableName: string, recordId: string): Promise<AirtableRecord<T> | null> {
     try {
-      const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
+      const res = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         headers: {
           Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       });
-      if (!response.ok) throw new Error("Error fetching record");
-      const data = await response.json();
+
+      if (!res.ok) throw new Error("Error fetching record");
+
+      const data = await res.json();
       return data;
-    } catch (error) {
-      toast({ title: "Error", description: `No se pudo cargar el registro en ${tableName}.`, variant: "destructive" });
+    } catch {
+      toast({ title: "Error", description: `No se pudo cargar el registro de ${tableName}`, variant: "destructive" });
       return null;
     }
   },
@@ -121,20 +159,22 @@ export const airtableService = {
   async createRecord<T>(tableName: keyof typeof RECORD_FIELDS, fields: T): Promise<AirtableRecord<T> | null> {
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
-      const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
+      const res = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ records: [{ fields: sanitizedFields }], typecast: true }),
+        body: JSON.stringify({ fields: sanitizedFields }),
       });
-      if (!response.ok) throw new Error("Error creating record");
-      const data = await response.json();
+
+      if (!res.ok) throw new Error("Error creating record");
+
+      const data = await res.json();
       toast({ title: "Éxito", description: `Registro creado en ${tableName}` });
-      return data.records[0];
-    } catch (error) {
-      toast({ title: "Error", description: `No se pudo crear el registro en ${tableName}.`, variant: "destructive" });
+      return data;
+    } catch {
+      toast({ title: "Error", description: `No se pudo crear el registro en ${tableName}`, variant: "destructive" });
       return null;
     }
   },
@@ -142,38 +182,42 @@ export const airtableService = {
   async updateRecord<T>(tableName: keyof typeof RECORD_FIELDS, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
-      const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
+      const res = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ records: [{ id: recordId, fields: sanitizedFields }], typecast: true }),
+        body: JSON.stringify({ fields: sanitizedFields }),
       });
-      if (!response.ok) throw new Error("Error updating record");
-      const data = await response.json();
+
+      if (!res.ok) throw new Error("Error updating record");
+
+      const data = await res.json();
       toast({ title: "Éxito", description: `Registro actualizado en ${tableName}` });
-      return data.records[0];
-    } catch (error) {
-      toast({ title: "Error", description: `No se pudo actualizar el registro en ${tableName}.`, variant: "destructive" });
+      return data;
+    } catch {
+      toast({ title: "Error", description: `No se pudo actualizar el registro en ${tableName}`, variant: "destructive" });
       return null;
     }
   },
 
   async deleteRecord(tableName: string, recordId: string): Promise<boolean> {
     try {
-      const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
+      const res = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       });
-      if (!response.ok) throw new Error("Error deleting record");
+
+      if (!res.ok) throw new Error("Error deleting record");
+
       toast({ title: "Éxito", description: `Registro eliminado de ${tableName}` });
       return true;
-    } catch (error) {
-      toast({ title: "Error", description: `No se pudo eliminar el registro de ${tableName}.`, variant: "destructive" });
+    } catch {
+      toast({ title: "Error", description: `No se pudo eliminar el registro de ${tableName}`, variant: "destructive" });
       return false;
     }
   },
@@ -181,7 +225,7 @@ export const airtableService = {
   async uploadImage(base64Image: string): Promise<string | null> {
     try {
       return base64Image;
-    } catch (error) {
+    } catch {
       toast({ title: "Error", description: "No se pudo subir la imagen", variant: "destructive" });
       return null;
     }
