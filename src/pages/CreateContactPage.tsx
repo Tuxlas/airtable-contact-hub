@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -12,7 +11,18 @@ const CreateContactPage = () => {
 
   const handleSubmit = async (data: ContactRecord) => {
     try {
-      const result = await createContact.mutateAsync(data);
+      // Normalización de campos relacionales e imagen
+      const formattedData: ContactRecord = {
+        ...data,
+        Empresa: data.Empresa ? [data.Empresa] : [],
+        Sede: data.Sede ? [data.Sede] : [],
+        Sector: data.Sector ? [data.Sector] : [],
+        TarjetaEscaneada: data.TarjetaEscaneada
+          ? [data.TarjetaEscaneada]
+          : [],
+      };
+
+      const result = await createContact.mutateAsync(formattedData);
       if (result?.id) {
         navigate(`/contacts/${result.id}`);
       }
