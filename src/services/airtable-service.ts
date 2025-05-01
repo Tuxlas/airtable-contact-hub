@@ -10,28 +10,26 @@ export type AirtableRecord<T> = {
   createdTime: string;
 };
 
-// Actualizada para incluir todos los campos mencionados por el usuario
 export type ContactRecord = {
   Nombre?: string;
   Apellidos?: string;
   Cargo?: string;
   Email?: string;
-  Teléfono?: string; // Con acento
+  Teléfono?: string;
   Empresa?: string[];
   Sede?: string[];
   Sector?: string[];
-  Dirección?: string; // Con acento
+  Dirección?: string;
   Ciudad?: string;
-  País?: string; // Con acento
+  País?: string;
   Fuente?: string;
   "Tarjeta Escaneada"?: string[];
   Web?: string;
-  "Fecha de Creación"?: string; // Con acento
+  "Fecha de Creación"?: string;
   WebEmpresa?: string;
   SectorName?: string;
 };
 
-// Actualizando la definición de CompanyRecord según los campos proporcionados
 export type CompanyRecord = {
   NombreEmpresa?: string;
   Sector?: string[];
@@ -41,20 +39,18 @@ export type CompanyRecord = {
   Tags?: string[];
   NumeroContactos?: number;
   Contactos?: string[];
-  "Fecha de Creación"?: string; // Con acento
+  "Fecha de Creación"?: string;
 };
 
-// Actualizando la definición de SedeRecord según los campos proporcionados
 export type SedeRecord = {
   Ciudad?: string;
   Empresa?: string[];
-  País?: string; // Con acento
-  Dirección?: string; // Con acento
+  País?: string;
+  Dirección?: string;
   TotalContactos?: number;
   Contactos?: string[];
 };
 
-// Actualizando la definición de SectorRecord según los campos proporcionados
 export type SectorRecord = {
   NombreSector?: string;
   Empresas?: string[];
@@ -62,10 +58,68 @@ export type SectorRecord = {
   Contactos?: string[];
 };
 
+// FUNCION UTIL para corregir campos (Teléfono, País, etc.)
+function fixFieldNames(tableName: string, fields: any): any {
+  const updatedFields = { ...fields };
+
+  if (tableName === "Contactos") {
+    if ('Telefono' in updatedFields && !('Teléfono' in updatedFields)) {
+      updatedFields['Teléfono'] = updatedFields['Telefono'];
+      delete updatedFields['Telefono'];
+    }
+    if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
+      updatedFields['Dirección'] = updatedFields['Direccion'];
+      delete updatedFields['Direccion'];
+    }
+    if ('Pais' in updatedFields && !('País' in updatedFields)) {
+      updatedFields['País'] = updatedFields['Pais'];
+      delete updatedFields['Pais'];
+    }
+  }
+
+  if (tableName === "Sedes") {
+    if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
+      updatedFields['Dirección'] = updatedFields['Direccion'];
+      delete updatedFields['Direccion'];
+    }
+    if ('Pais' in updatedFields && !('País' in updatedFields)) {
+      updatedFields['País'] = updatedFields['Pais'];
+      delete updatedFields['Pais'];
+    }
+  }
+
+  if (tableName === "Empresas") {
+    if ('Nombre' in updatedFields && !('NombreEmpresa' in updatedFields)) {
+      updatedFields['NombreEmpresa'] = updatedFields['Nombre'];
+      delete updatedFields['Nombre'];
+    }
+    if ('Numero de Sedes' in updatedFields && !('NumeroSedes' in updatedFields)) {
+      updatedFields['NumeroSedes'] = updatedFields['Numero de Sedes'];
+      delete updatedFields['Numero de Sedes'];
+    }
+    if ('Numero de Contactos' in updatedFields && !('NumeroContactos' in updatedFields)) {
+      updatedFields['NumeroContactos'] = updatedFields['Numero de Contactos'];
+      delete updatedFields['Numero de Contactos'];
+    }
+  }
+
+  if (tableName === "Sectores") {
+    if ('Nombre' in updatedFields && !('NombreSector' in updatedFields)) {
+      updatedFields['NombreSector'] = updatedFields['Nombre'];
+      delete updatedFields['Nombre'];
+    }
+    if ('Numero de Empresas' in updatedFields && !('NumeroEmpresas' in updatedFields)) {
+      updatedFields['NumeroEmpresas'] = updatedFields['Numero de Empresas'];
+      delete updatedFields['Numero de Empresas'];
+    }
+  }
+
+  return updatedFields;
+}
+
 export const airtableService = {
   async fetchRecords<T>(tableName: string): Promise<AirtableRecord<T>[]> {
     try {
-      console.log(`Fetching records from ${tableName}...`);
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
@@ -73,26 +127,14 @@ export const airtableService = {
         },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error fetching ${tableName}: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error fetching ${tableName}: ${response.statusText} (${response.status})`);
-      }
+      if (!response.ok) throw new Error(`Error fetching ${tableName}`);
 
       const data = await response.json();
-      console.log(`Successfully fetched ${data.records.length} records from ${tableName}`);
-      
-      // Log first record field names for debugging
-      if (data.records && data.records.length > 0) {
-        console.log(`First record fields: ${JSON.stringify(Object.keys(data.records[0].fields))}`);
-      }
-      
       return data.records;
     } catch (error) {
-      console.error(`Error fetching ${tableName}:`, error);
       toast({
         title: "Error de conexión",
-        description: `No se pudieron cargar los datos de ${tableName}. Verifica la conexión con Airtable.`,
+        description: `No se pudieron cargar los datos de ${tableName}.`,
         variant: "destructive",
       });
       return [];
@@ -101,7 +143,6 @@ export const airtableService = {
 
   async fetchRecord<T>(tableName: string, recordId: string): Promise<AirtableRecord<T> | null> {
     try {
-      console.log(`Fetching record ${recordId} from ${tableName}...`);
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
@@ -109,26 +150,14 @@ export const airtableService = {
         },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error fetching record from ${tableName}: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error fetching record: ${response.statusText} (${response.status})`);
-      }
+      if (!response.ok) throw new Error(`Error fetching record`);
 
       const data = await response.json();
-      console.log(`Successfully fetched record ${recordId} from ${tableName}`);
-      
-      // Log record field names for debugging
-      if (data && data.fields) {
-        console.log(`Record fields: ${JSON.stringify(Object.keys(data.fields))}`);
-      }
-      
       return data;
     } catch (error) {
-      console.error(`Error fetching record from ${tableName}:`, error);
       toast({
         title: "Error",
-        description: `No se pudo cargar el registro de ${tableName}. Verifica la conexión con Airtable.`,
+        description: `No se pudo cargar el registro de ${tableName}.`,
         variant: "destructive",
       });
       return null;
@@ -137,34 +166,26 @@ export const airtableService = {
 
   async createRecord<T>(tableName: string, fields: T): Promise<AirtableRecord<T> | null> {
     try {
-      console.log(`Creating record in ${tableName}...`, fields);
+      const fixedFields = fixFieldNames(tableName, fields);
+
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({ fields: fixedFields }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error creating record in ${tableName}: ${response.status} ${response.statusText}`, errorText);
-        throw new Error(`Error creating record: ${response.statusText} (${response.status})`);
-      }
+      if (!response.ok) throw new Error(`Error creating record`);
 
       const data = await response.json();
-      console.log(`Successfully created record in ${tableName}`);
-      toast({
-        title: "Éxito",
-        description: `Registro creado correctamente en ${tableName}`,
-      });
+      toast({ title: "Éxito", description: `Registro creado en ${tableName}` });
       return data;
     } catch (error) {
-      console.error(`Error creating record in ${tableName}:`, error);
       toast({
         title: "Error",
-        description: `No se pudo crear el registro en ${tableName}. Verifica la conexión con Airtable.`,
+        description: `No se pudo crear el registro en ${tableName}.`,
         variant: "destructive",
       });
       return null;
@@ -173,136 +194,38 @@ export const airtableService = {
 
   async updateRecord<T>(tableName: string, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
     try {
-      console.log(`Updating record ${recordId} in ${tableName}...`, fields);
-      
-      // Fix common field name errors - this helps with the accent issues
-      if (tableName === "Contactos") {
-        const updatedFields = { ...fields } as any;
-        
-        // Handle specific field name corrections
-        if ('Telefono' in updatedFields && !('Teléfono' in updatedFields)) {
-          console.log("Converting 'Telefono' field to 'Teléfono'");
-          updatedFields['Teléfono'] = updatedFields['Telefono'];
-          delete updatedFields['Telefono'];
-        }
-        
-        if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
-          console.log("Converting 'Direccion' field to 'Dirección'");
-          updatedFields['Dirección'] = updatedFields['Direccion'];
-          delete updatedFields['Direccion'];
-        }
-        
-        if ('Pais' in updatedFields && !('País' in updatedFields)) {
-          console.log("Converting 'Pais' field to 'País'");
-          updatedFields['País'] = updatedFields['Pais'];
-          delete updatedFields['Pais'];
-        }
-        
-        fields = updatedFields;
-      }
-      
-      // Also fix field name errors for Sedes table
-      if (tableName === "Sedes") {
-        const updatedFields = { ...fields } as any;
-        
-        if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
-          console.log("Converting 'Direccion' field to 'Dirección'");
-          updatedFields['Dirección'] = updatedFields['Direccion'];
-          delete updatedFields['Direccion'];
-        }
-        
-        if ('Pais' in updatedFields && !('País' in updatedFields)) {
-          console.log("Converting 'Pais' field to 'País'");
-          updatedFields['País'] = updatedFields['Pais'];
-          delete updatedFields['Pais'];
-        }
-        
-        fields = updatedFields;
-      }
-      
-      // Fix field name errors for Empresas table
-      if (tableName === "Empresas") {
-        const updatedFields = { ...fields } as any;
-        
-        if ('Nombre' in updatedFields && !('NombreEmpresa' in updatedFields)) {
-          console.log("Converting 'Nombre' to 'NombreEmpresa'");
-          updatedFields['NombreEmpresa'] = updatedFields['Nombre'];
-          delete updatedFields['Nombre'];
-        }
-        
-        if ('Numero de Sedes' in updatedFields && !('NumeroSedes' in updatedFields)) {
-          console.log("Converting 'Numero de Sedes' to 'NumeroSedes'");
-          updatedFields['NumeroSedes'] = updatedFields['Numero de Sedes'];
-          delete updatedFields['Numero de Sedes'];
-        }
-        
-        if ('Numero de Contactos' in updatedFields && !('NumeroContactos' in updatedFields)) {
-          console.log("Converting 'Numero de Contactos' to 'NumeroContactos'");
-          updatedFields['NumeroContactos'] = updatedFields['Numero de Contactos'];
-          delete updatedFields['Numero de Contactos'];
-        }
-        
-        fields = updatedFields;
-      }
-      
-      // Fix field name errors for Sectores table
-      if (tableName === "Sectores") {
-        const updatedFields = { ...fields } as any;
-        
-        if ('Nombre' in updatedFields && !('NombreSector' in updatedFields)) {
-          console.log("Converting 'Nombre' to 'NombreSector'");
-          updatedFields['NombreSector'] = updatedFields['Nombre'];
-          delete updatedFields['Nombre'];
-        }
-        
-        if ('Numero de Empresas' in updatedFields && !('NumeroEmpresas' in updatedFields)) {
-          console.log("Converting 'Numero de Empresas' to 'NumeroEmpresas'");
-          updatedFields['NumeroEmpresas'] = updatedFields['Numero de Empresas'];
-          delete updatedFields['Numero de Empresas'];
-        }
-        
-        fields = updatedFields;
-      }
-      
+      const fixedFields = fixFieldNames(tableName, fields);
+
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({ fields: fixedFields }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`Error updating record in ${tableName}: ${response.status} ${response.statusText}`, errorText);
-        
-        // Provide more specific error message for field name issues
         if (response.status === 422 && errorText.includes("Unknown field name")) {
           const fieldMatch = errorText.match(/Unknown field name: "([^"]+)"/);
           const fieldName = fieldMatch ? fieldMatch[1] : "unknown";
           toast({
             title: "Error de campo",
-            description: `El campo "${fieldName}" no existe en Airtable. Verifica el nombre exacto del campo en Airtable.`,
+            description: `El campo "${fieldName}" no existe en Airtable.`,
             variant: "destructive",
           });
         }
-        
-        throw new Error(`Error updating record: ${response.statusText} (${response.status})`);
+        throw new Error(`Error updating record`);
       }
 
       const data = await response.json();
-      console.log(`Successfully updated record ${recordId} in ${tableName}`);
-      toast({
-        title: "Éxito",
-        description: `Registro actualizado correctamente en ${tableName}`,
-      });
+      toast({ title: "Éxito", description: `Registro actualizado en ${tableName}` });
       return data;
     } catch (error) {
-      console.error(`Error updating record in ${tableName}:`, error);
       toast({
         title: "Error",
-        description: `No se pudo actualizar el registro en ${tableName}. Verifica la conexión con Airtable.`,
+        description: `No se pudo actualizar el registro en ${tableName}.`,
         variant: "destructive",
       });
       return null;
@@ -319,20 +242,14 @@ export const airtableService = {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`Error deleting record: ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error(`Error deleting record`);
 
-      toast({
-        title: "Éxito",
-        description: `Registro eliminado correctamente de ${tableName}`,
-      });
+      toast({ title: "Éxito", description: `Registro eliminado de ${tableName}` });
       return true;
     } catch (error) {
-      console.error(`Error deleting record from ${tableName}:`, error);
       toast({
         title: "Error",
-        description: `No se pudo eliminar el registro de ${tableName}`,
+        description: `No se pudo eliminar el registro de ${tableName}.`,
         variant: "destructive",
       });
       return false;
@@ -341,11 +258,8 @@ export const airtableService = {
 
   async uploadImage(base64Image: string): Promise<string | null> {
     try {
-      // In a real implementation, you would upload the image to Airtable
-      // For now, we'll just return the base64 string
       return base64Image;
     } catch (error) {
-      console.error("Error uploading image:", error);
       toast({
         title: "Error",
         description: "No se pudo subir la imagen",
@@ -355,3 +269,4 @@ export const airtableService = {
     }
   },
 };
+
