@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 const AIRTABLE_API_KEY = "pat9tJ0oxUIgtnzoq.fd104ea0b4866aa88fc66f2ab2c10d7ecf9507b1662873bff43c991978b733f6";
@@ -10,11 +11,12 @@ export type AirtableRecord<T> = {
   createdTime: string;
 };
 
+// Updated field names to match exactly what's in Airtable
 export type ContactRecord = {
   Nombre?: string;
   Cargo?: string;
   Email?: string;
-  Telefono?: string;
+  Teléfono?: string; // Fixed field name from "Telefono" to "Teléfono" with accent
   Empresa?: string[];
   Sede?: string[];
   Sector?: string[];
@@ -70,6 +72,12 @@ export const airtableService = {
 
       const data = await response.json();
       console.log(`Successfully fetched ${data.records.length} records from ${tableName}`);
+      
+      // Log first record field names for debugging
+      if (data.records && data.records.length > 0) {
+        console.log(`First record fields: ${JSON.stringify(Object.keys(data.records[0].fields))}`);
+      }
+      
       return data.records;
     } catch (error) {
       console.error(`Error fetching ${tableName}:`, error);
@@ -100,6 +108,12 @@ export const airtableService = {
 
       const data = await response.json();
       console.log(`Successfully fetched record ${recordId} from ${tableName}`);
+      
+      // Log record field names for debugging
+      if (data && data.fields) {
+        console.log(`Record fields: ${JSON.stringify(Object.keys(data.fields))}`);
+      }
+      
       return data;
     } catch (error) {
       console.error(`Error fetching record from ${tableName}:`, error);
@@ -151,6 +165,16 @@ export const airtableService = {
   async updateRecord<T>(tableName: string, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
     try {
       console.log(`Updating record ${recordId} in ${tableName}...`, fields);
+      
+      // Fix common field name errors - this helps with the Telefono/Teléfono issue
+      if (tableName === "Contactos" && 'Telefono' in fields && !('Teléfono' in fields)) {
+        console.log("Converting 'Telefono' field to 'Teléfono'");
+        const updatedFields = { ...fields } as any;
+        updatedFields['Teléfono'] = updatedFields['Telefono'];
+        delete updatedFields['Telefono'];
+        fields = updatedFields;
+      }
+      
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
@@ -163,6 +187,18 @@ export const airtableService = {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Error updating record in ${tableName}: ${response.status} ${response.statusText}`, errorText);
+        
+        // Provide more specific error message for field name issues
+        if (response.status === 422 && errorText.includes("Unknown field name")) {
+          const fieldMatch = errorText.match(/Unknown field name: "([^"]+)"/);
+          const fieldName = fieldMatch ? fieldMatch[1] : "unknown";
+          toast({
+            title: "Error de campo",
+            description: `El campo "${fieldName}" no existe en Airtable. Verifica el nombre exacto del campo en Airtable.`,
+            variant: "destructive",
+          });
+        }
+        
         throw new Error(`Error updating record: ${response.statusText} (${response.status})`);
       }
 

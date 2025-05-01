@@ -17,7 +17,7 @@ const DashboardPage = () => {
     return (
       <MainLayout title="Dashboard">
         <div className="space-y-6">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-32 w-full" />
             ))}
@@ -46,7 +46,7 @@ const DashboardPage = () => {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="grid grid-cols-4 gap-2 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-8">
         <Card className="p-3 flex flex-col items-center justify-center shadow-sm">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-1">
             <User className="text-primary" size={20} />
@@ -120,7 +120,7 @@ const DashboardPage = () => {
                         {contact.fields.Email}
                       </p>
                       <p className="text-sm text-text-body truncate">
-                        {contact.fields.Telefono}
+                        {contact.fields.Teléfono}
                       </p>
                     </div>
                     <ChevronRight className="text-gray-400" size={20} />

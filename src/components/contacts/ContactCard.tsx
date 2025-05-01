@@ -11,7 +11,7 @@ interface ContactCardProps {
 }
 
 const ContactCard = ({ contact }: ContactCardProps) => {
-  const { Nombre, Cargo, Email, Telefono } = contact.fields;
+  const { Nombre, Cargo, Email, Teléfono } = contact.fields;
   const empresaNombre = contact.fields.Empresa && contact.fields.Empresa.length > 0 
     ? contact.fields.Empresa[0] 
     : null;
@@ -46,9 +46,9 @@ const ContactCard = ({ contact }: ContactCardProps) => {
               {Email}
             </p>
           )}
-          {Telefono && (
+          {Teléfono && (
             <p className="text-sm text-text-body">
-              {Telefono}
+              {Teléfono}
             </p>
           )}
         </div>
