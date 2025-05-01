@@ -11,7 +11,9 @@ interface ContactCardProps {
 }
 
 const ContactCard = ({ contact }: ContactCardProps) => {
-  const { Nombre, Cargo, Email, Teléfono } = contact.fields;
+  const { Nombre, Apellidos, Cargo, Email, Teléfono } = contact.fields;
+  const nombreCompleto = Apellidos ? `${Nombre || ""} ${Apellidos}` : Nombre;
+  
   const empresaNombre = contact.fields.Empresa && contact.fields.Empresa.length > 0 
     ? contact.fields.Empresa[0] 
     : null;
@@ -24,7 +26,7 @@ const ContactCard = ({ contact }: ContactCardProps) => {
             {contact.fields["Tarjeta Escaneada"] && contact.fields["Tarjeta Escaneada"].length > 0 ? (
               <AvatarImage 
                 src={contact.fields["Tarjeta Escaneada"][0]} 
-                alt={Nombre || "Contacto"} 
+                alt={nombreCompleto || "Contacto"} 
                 className="object-cover"
               />
             ) : (
@@ -36,7 +38,7 @@ const ContactCard = ({ contact }: ContactCardProps) => {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-medium text-text-title truncate">
-            {Nombre || "Sin nombre"}
+            {nombreCompleto || "Sin nombre"}
           </h3>
           <p className="text-sm text-text-body">
             {empresaNombre || Cargo || ""}

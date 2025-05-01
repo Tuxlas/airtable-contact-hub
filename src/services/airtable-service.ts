@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 const AIRTABLE_API_KEY = "pat9tJ0oxUIgtnzoq.fd104ea0b4866aa88fc66f2ab2c10d7ecf9507b1662873bff43c991978b733f6";
@@ -11,46 +10,56 @@ export type AirtableRecord<T> = {
   createdTime: string;
 };
 
-// Updated field names to match exactly what's in Airtable (with accents)
+// Actualizada para incluir todos los campos mencionados por el usuario
 export type ContactRecord = {
   Nombre?: string;
+  Apellidos?: string;
   Cargo?: string;
   Email?: string;
-  Teléfono?: string; // With accent
+  Teléfono?: string; // Con acento
   Empresa?: string[];
   Sede?: string[];
   Sector?: string[];
-  Dirección?: string; // With accent
+  Dirección?: string; // Con acento
   Ciudad?: string;
-  País?: string; // With accent
+  País?: string; // Con acento
   Fuente?: string;
   "Tarjeta Escaneada"?: string[];
   Web?: string;
-  "Fecha de Creación"?: string; // With accent
+  "Fecha de Creación"?: string; // Con acento
+  WebEmpresa?: string;
+  SectorName?: string;
 };
 
+// Actualizando la definición de CompanyRecord según los campos proporcionados
 export type CompanyRecord = {
-  Nombre?: string;
+  NombreEmpresa?: string;
   Sector?: string[];
-  Web?: string;
+  WebEmpresa?: string;
+  Sedes?: string[];
+  NumeroSedes?: number;
   Tags?: string[];
-  "Número de Sedes"?: number; // With accent
-  "Número de Contactos"?: number; // With accent
-  "Contactos Relacionados"?: string[];
+  NumeroContactos?: number;
+  Contactos?: string[];
+  "Fecha de Creación"?: string; // Con acento
 };
 
+// Actualizando la definición de SedeRecord según los campos proporcionados
 export type SedeRecord = {
   Ciudad?: string;
-  País?: string; // With accent
-  Dirección?: string; // With accent
   Empresa?: string[];
-  "Contactos Relacionados"?: string[];
+  País?: string; // Con acento
+  Dirección?: string; // Con acento
+  TotalContactos?: number;
+  Contactos?: string[];
 };
 
+// Actualizando la definición de SectorRecord según los campos proporcionados
 export type SectorRecord = {
-  Nombre?: string;
-  "Empresas Relacionadas"?: string[];
-  "Contactos Relacionados"?: string[];
+  NombreSector?: string;
+  Empresas?: string[];
+  NumeroEmpresas?: number;
+  Contactos?: string[];
 };
 
 export const airtableService = {

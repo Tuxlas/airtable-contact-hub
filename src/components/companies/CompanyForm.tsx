@@ -34,15 +34,16 @@ const CompanyForm = ({ initialData, onSubmit, isLoading }: CompanyFormProps) => 
 
   const form = useForm<CompanyRecord>({
     defaultValues: {
-      Nombre: initialData?.fields.Nombre || "",
-      Web: initialData?.fields.Web || "",
+      NombreEmpresa: initialData?.fields.NombreEmpresa || "",
+      WebEmpresa: initialData?.fields.WebEmpresa || "",
       Tags: initialData?.fields.Tags || [],
-      "Número de Sedes": initialData?.fields["Número de Sedes"] || 0,
-      "Número de Contactos": initialData?.fields["Número de Contactos"] || 0,
+      NumeroSedes: initialData?.fields.NumeroSedes || 0,
+      NumeroContactos: initialData?.fields.NumeroContactos || 0,
     },
   });
 
   const handleSubmit = (data: CompanyRecord) => {
+    console.log("Submitting company data:", data);
     onSubmit(data);
   };
 
@@ -52,7 +53,7 @@ const CompanyForm = ({ initialData, onSubmit, isLoading }: CompanyFormProps) => 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="Nombre"
+            name="NombreEmpresa"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nombre*</FormLabel>
@@ -65,7 +66,7 @@ const CompanyForm = ({ initialData, onSubmit, isLoading }: CompanyFormProps) => 
 
           <FormField
             control={form.control}
-            name="Web"
+            name="WebEmpresa"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Sitio web</FormLabel>
@@ -90,7 +91,7 @@ const CompanyForm = ({ initialData, onSubmit, isLoading }: CompanyFormProps) => 
               <SelectContent>
                 {sectors?.map((sector) => (
                   <SelectItem key={sector.id} value={sector.id}>
-                    {sector.fields.Nombre || "Sin nombre"}
+                    {sector.fields.NombreSector || "Sin nombre"}
                   </SelectItem>
                 ))}
               </SelectContent>

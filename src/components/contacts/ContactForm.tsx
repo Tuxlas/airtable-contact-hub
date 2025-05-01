@@ -13,15 +13,11 @@ import { useForm } from "react-hook-form";
 import {
   ContactRecord,
   AirtableRecord,
-  CompanyRecord,
-  SedeRecord,
-  SectorRecord,
 } from "@/services/airtable-service";
 import { 
   useCompanies,
   useLocations,
   useSectors,
-  useGetRecordById
 } from "@/hooks/use-airtable-queries";
 import { 
   Select, 
@@ -51,14 +47,17 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   const form = useForm<ContactRecord>({
     defaultValues: {
       Nombre: initialData?.fields.Nombre || "",
+      Apellidos: initialData?.fields.Apellidos || "",
       Cargo: initialData?.fields.Cargo || "",
       Email: initialData?.fields.Email || "",
-      Teléfono: initialData?.fields.Teléfono || "", // Fixed: Teléfono with accent
-      Dirección: initialData?.fields.Dirección || "",
+      Teléfono: initialData?.fields.Teléfono || "", // Con acento
+      Dirección: initialData?.fields.Dirección || "", // Con acento
       Ciudad: initialData?.fields.Ciudad || "",
-      País: initialData?.fields.País || "",
+      País: initialData?.fields.País || "", // Con acento
       Web: initialData?.fields.Web || "",
       Fuente: initialData?.fields.Fuente || "",
+      WebEmpresa: initialData?.fields.WebEmpresa || "",
+      SectorName: initialData?.fields.SectorName || "",
     },
   });
 
@@ -89,6 +88,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     if (imagePreview) {
       data["Tarjeta Escaneada"] = [imagePreview];
     }
+    console.log("Submitting contact data:", data);
     onSubmit(data);
   };
 
@@ -132,7 +132,20 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               <FormItem>
                 <FormLabel>Nombre*</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nombre completo" {...field} required />
+                  <Input placeholder="Nombre" {...field} required />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="Apellidos"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Apellidos</FormLabel>
+                <FormControl>
+                  <Input placeholder="Apellidos" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -191,7 +204,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               <SelectContent>
                 {companies?.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
-                    {company.fields.Nombre || "Sin nombre"}
+                    {company.fields.NombreEmpresa || "Sin nombre"}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -233,7 +246,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               <SelectContent>
                 {sectors?.map((sector) => (
                   <SelectItem key={sector.id} value={sector.id}>
-                    {sector.fields.Nombre || "Sin nombre"}
+                    {sector.fields.NombreSector || "Sin nombre"}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -287,6 +300,19 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
                 <FormLabel>Web</FormLabel>
                 <FormControl>
                   <Input placeholder="Sitio web" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="WebEmpresa"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Web de la Empresa</FormLabel>
+                <FormControl>
+                  <Input placeholder="Web de la empresa" {...field} />
                 </FormControl>
               </FormItem>
             )}

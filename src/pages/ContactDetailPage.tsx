@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate, Link } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import {
@@ -9,7 +10,6 @@ import {
   useSectors,
 } from "@/hooks/use-airtable-queries";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import ContactForm from "@/components/contacts/ContactForm";
 import { Phone, Mail, Building, MapPin, Globe, Calendar, Trash2, Edit, UserRound } from "lucide-react";
@@ -27,7 +27,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -68,7 +67,7 @@ const ContactDetailPage = () => {
 
   // Find related records
   const companyName = contact?.fields.Empresa?.[0]
-    ? companies?.find((c) => c.id === contact.fields.Empresa?.[0])?.fields.Nombre
+    ? companies?.find((c) => c.id === contact.fields.Empresa?.[0])?.fields.NombreEmpresa
     : undefined;
 
   const locationName = contact?.fields.Sede?.[0]
@@ -76,11 +75,10 @@ const ContactDetailPage = () => {
     : undefined;
 
   const sectorName = contact?.fields.Sector?.[0]
-    ? sectors?.find((s) => s.id === contact.fields.Sector?.[0])?.fields.Nombre
+    ? sectors?.find((s) => s.id === contact.fields.Sector?.[0])?.fields.NombreSector
     : undefined;
 
   const handleCall = () => {
-    // Use Teléfono field with accent
     if (contact?.fields.Teléfono) {
       window.location.href = `tel:${contact.fields.Teléfono}`;
     }
@@ -93,7 +91,6 @@ const ContactDetailPage = () => {
   };
 
   const handleWhatsApp = () => {
-    // Use Teléfono field with accent
     if (contact?.fields.Teléfono) {
       // Remove non-numeric characters for WhatsApp
       const phone = contact.fields.Teléfono.replace(/\D/g, "");
@@ -104,11 +101,11 @@ const ContactDetailPage = () => {
   const handleAddToContacts = () => {
     if (!contact) return;
     
-    // Create vCard data - use Teléfono field with accent
+    // Create vCard data
     const vCardData = [
       "BEGIN:VCARD",
       "VERSION:3.0",
-      `FN:${contact.fields.Nombre || ""}`,
+      `FN:${contact.fields.Nombre || ""} ${contact.fields.Apellidos || ""}`,
       `TITLE:${contact.fields.Cargo || ""}`,
       `TEL:${contact.fields.Teléfono || ""}`,
       `EMAIL:${contact.fields.Email || ""}`,
@@ -154,8 +151,8 @@ const ContactDetailPage = () => {
     );
   }
 
-  // Use Teléfono field with accent for display
   const phoneNumber = contact?.fields.Teléfono || "";
+  const fullName = `${contact.fields.Nombre || ""} ${contact.fields.Apellidos || ""}`;
 
   return (
     <MainLayout>
@@ -209,7 +206,7 @@ const ContactDetailPage = () => {
               <div className="w-20 h-20 rounded-full overflow-hidden mr-4">
                 <img
                   src={contact.fields["Tarjeta Escaneada"][0]}
-                  alt={contact.fields.Nombre}
+                  alt={fullName}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -220,7 +217,7 @@ const ContactDetailPage = () => {
             )}
             <div>
               <h1 className="text-2xl font-medium text-text-title mb-1">
-                {contact.fields.Nombre || "Sin nombre"}
+                {fullName || "Sin nombre"}
               </h1>
               <p className="text-text-body">
                 {contact.fields.Cargo || "Sin cargo"}
@@ -286,6 +283,24 @@ const ContactDetailPage = () => {
                   className="text-primary underline"
                 >
                   {contact.fields.Web}
+                </a>
+              </div>
+            )}
+
+            {contact.fields.WebEmpresa && (
+              <div className="flex items-center">
+                <Globe size={18} className="mr-3 text-gray-500" />
+                <a
+                  href={
+                    contact.fields.WebEmpresa.startsWith("http")
+                      ? contact.fields.WebEmpresa
+                      : `https://${contact.fields.WebEmpresa}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  {contact.fields.WebEmpresa} (Empresa)
                 </a>
               </div>
             )}
