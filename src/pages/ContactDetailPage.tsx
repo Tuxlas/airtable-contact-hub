@@ -42,7 +42,6 @@ const ContactDetailPage = () => {
 
   const handleSubmit = async (data: ContactRecord) => {
     try {
-      console.log("Updating contact with data:", data);
       await updateContact.mutateAsync(data);
       setIsEditing(false);
     } catch (error) {
@@ -64,7 +63,6 @@ const ContactDetailPage = () => {
     }
   };
 
-  // Find related records
   const companyName = contact?.fields.Empresa?.[0]
     ? companies?.find((c) => c.id === contact.fields.Empresa?.[0])?.fields.NombreEmpresa
     : undefined;
@@ -77,11 +75,9 @@ const ContactDetailPage = () => {
     ? sectors?.find((s) => s.id === contact.fields.Sector?.[0])?.fields.NombreSector
     : undefined;
 
-  const telefono = contact?.fields.Telefono;
-
   const handleCall = () => {
-    if (telefono) {
-      window.location.href = `tel:${telefono}`;
+    if (contact?.fields.Telefono) {
+      window.location.href = `tel:${contact.fields.Telefono}`;
     }
   };
 
@@ -92,8 +88,8 @@ const ContactDetailPage = () => {
   };
 
   const handleWhatsApp = () => {
-    if (telefono) {
-      const phone = telefono.replace(/\D/g, "");
+    if (contact?.fields.Telefono) {
+      const phone = contact.fields.Telefono.replace(/\D/g, "");
       window.open(`https://wa.me/${phone}`, "_blank");
     }
   };
@@ -106,7 +102,7 @@ const ContactDetailPage = () => {
       "VERSION:3.0",
       `FN:${contact.fields.Nombre || ""} ${contact.fields.Apellidos || ""}`,
       `TITLE:${contact.fields.Cargo || ""}`,
-      `TEL:${telefono || ""}`,
+      `TEL:${contact.fields.Telefono || ""}`,
       `EMAIL:${contact.fields.Email || ""}`,
       `ORG:${companyName || ""}`,
       `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
@@ -149,22 +145,16 @@ const ContactDetailPage = () => {
     );
   }
 
-  const nombreCompleto = contact.fields.Apellidos 
-    ? `${contact.fields.Nombre || ""} ${contact.fields.Apellidos}` 
+  const nombreCompleto = contact.fields.Apellidos
+    ? `${contact.fields.Nombre || ""} ${contact.fields.Apellidos}`
     : contact.fields.Nombre || "";
 
   return (
     <MainLayout>
       <div className="flex justify-between mb-4">
-        <Link to="/contacts" className="text-primary">
-          ← Volver
-        </Link>
+        <Link to="/contacts" className="text-primary">← Volver</Link>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
             <Edit size={16} className="mr-1" />
             {isEditing ? "Cancelar" : "Editar"}
           </Button>
@@ -179,7 +169,7 @@ const ContactDetailPage = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Eliminar contacto?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta acción no se puede deshacer. Se eliminará permanentemente este contacto de la base de datos.
+                  Esta acción no se puede deshacer.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -192,22 +182,13 @@ const ContactDetailPage = () => {
       </div>
 
       {isEditing ? (
-        <ContactForm
-          initialData={contact}
-          onSubmit={handleSubmit}
-          isLoading={updateContact.isPending}
-        />
+        <ContactForm initialData={contact} onSubmit={handleSubmit} isLoading={updateContact.isPending} />
       ) : (
         <div className="space-y-6">
           <div className="mb-6 flex items-center">
-            {contact.fields["Tarjeta Escaneada"] && 
-             contact.fields["Tarjeta Escaneada"].length > 0 ? (
+            {contact.fields.TarjetaEscaneada && contact.fields.TarjetaEscaneada.length > 0 ? (
               <div className="w-20 h-20 rounded-full overflow-hidden mr-4">
-                <img
-                  src={contact.fields["Tarjeta Escaneada"][0]}
-                  alt={nombreCompleto}
-                  className="w-full h-full object-cover"
-                />
+                <img src={contact.fields.TarjetaEscaneada[0]} alt={nombreCompleto} className="w-full h-full object-cover" />
               </div>
             ) : (
               <div className="w-20 h-20 rounded-full bg-primary/10 mr-4 flex items-center justify-center">
@@ -215,151 +196,29 @@ const ContactDetailPage = () => {
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-medium text-text-title mb-1">
-                {nombreCompleto || "Sin nombre"}
-              </h1>
-              <p className="text-text-body">
-                {contact.fields.Cargo || "Sin cargo"}
-              </p>
+              <h1 className="text-2xl font-medium text-text-title mb-1">{nombreCompleto || "Sin nombre"}</h1>
+              <p className="text-text-body">{contact.fields.Cargo || "Sin cargo"}</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            {contact.fields.Email && (
-              <div className="flex items-center">
-                <Mail size={18} className="mr-3 text-gray-500" />
-                <span>{contact.fields.Email}</span>
-              </div>
-            )}
-
-            {telefono && (
-              <div className="flex items-center">
-                <Phone size={18} className="mr-3 text-gray-500" />
-                <span>{telefono}</span>
-              </div>
-            )}
-
-            {companyName && (
-              <div className="flex items-center">
-                <Building size={18} className="mr-3 text-gray-500" />
-                <span>{companyName}</span>
-              </div>
-            )}
-
-            {(locationName || sectorName) && (
-              <div className="flex items-center">
-                <MapPin size={18} className="mr-3 text-gray-500" />
-                <span>
-                  {locationName || ""}{" "}
-                  {locationName && sectorName ? " - " : ""}
-                  {sectorName || ""}
-                </span>
-              </div>
-            )}
-
-            {contact.fields.Direccion && (
-              <div className="flex items-center">
-                <MapPin size={18} className="mr-3 text-gray-500" />
-                <span>
-                  {contact.fields.Direccion}
-                  {contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}
-                  {contact.fields.Pais && `, ${contact.fields.Pais}`}
-                </span>
-              </div>
-            )}
-
-            {contact.fields.Web && (
-              <div className="flex items-center">
-                <Globe size={18} className="mr-3 text-gray-500" />
-                <a
-                  href={
-                    contact.fields.Web.startsWith("http")
-                      ? contact.fields.Web
-                      : `https://${contact.fields.Web}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline"
-                >
-                  {contact.fields.Web}
-                </a>
-              </div>
-            )}
-
-            {contact.fields.WebEmpresa && (
-              <div className="flex items-center">
-                <Globe size={18} className="mr-3 text-gray-500" />
-                <a
-                  href={
-                    contact.fields.WebEmpresa.startsWith("http")
-                      ? contact.fields.WebEmpresa
-                      : `https://${contact.fields.WebEmpresa}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline"
-                >
-                  {contact.fields.WebEmpresa} (Empresa)
-                </a>
-              </div>
-            )}
-
-            {contact.fields.Fuente && (
-              <div className="flex items-start">
-                <div className="mt-1">
-                  <Calendar size={18} className="mr-3 text-gray-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Fuente</p>
-                  <p>{contact.fields.Fuente}</p>
-                </div>
-              </div>
-            )}
+            {contact.fields.Email && <div className="flex items-center"><Mail size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Email}</span></div>}
+            {contact.fields.Telefono && <div className="flex items-center"><Phone size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Telefono}</span></div>}
+            {companyName && <div className="flex items-center"><Building size={18} className="mr-3 text-gray-500" /><span>{companyName}</span></div>}
+            {(locationName || sectorName) && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{locationName || ""} {locationName && sectorName ? " - " : ""}{sectorName || ""}</span></div>}
+            {contact.fields.Direccion && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Direccion}{contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}{contact.fields.Pais && `, ${contact.fields.Pais}`}</span></div>}
+            {contact.fields.Web && <div className="flex items-center"><Globe size={18} className="mr-3 text-gray-500" /><a href={contact.fields.Web.startsWith("http") ? contact.fields.Web : `https://${contact.fields.Web}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{contact.fields.Web}</a></div>}
+            {contact.fields.WebEmpresa && <div className="flex items-center"><Globe size={18} className="mr-3 text-gray-500" /><a href={contact.fields.WebEmpresa.startsWith("http") ? contact.fields.WebEmpresa : `https://${contact.fields.WebEmpresa}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{contact.fields.WebEmpresa} (Empresa)</a></div>}
+            {contact.fields.Fuente && <div className="flex items-start"><div className="mt-1"><Calendar size={18} className="mr-3 text-gray-500" /></div><div><p className="text-sm text-gray-500 mb-1">Fuente</p><p>{contact.fields.Fuente}</p></div></div>}
           </div>
 
           <div className="mt-8">
             <h2 className="text-lg font-medium mb-3">Acciones</h2>
             <div className="flex flex-row gap-2">
-              <Button
-                onClick={handleCall}
-                disabled={!telefono}
-                variant="default"
-                size="sm"
-                className="bg-primary/90 hover:bg-primary flex flex-row items-center"
-              >
-                <Phone size={16} className="mr-1" />
-                <span>Llamar</span>
-              </Button>
-
-              <Button
-                onClick={handleEmail}
-                disabled={!contact.fields.Email}
-                variant="default"
-                size="sm"
-                className="bg-primary/90 hover:bg-primary flex flex-row items-center"
-              >
-                <Mail size={16} className="mr-1" />
-                <span>Email</span>
-              </Button>
-
-              <Button
-                onClick={handleWhatsApp}
-                disabled={!telefono}
-                variant="default"
-                size="sm"
-                className="bg-primary/90 hover:bg-primary flex flex-row items-center"
-              >
-                <span>WhatsApp</span>
-              </Button>
-
-              <Button
-                onClick={handleAddToContacts}
-                variant="default"
-                size="sm"
-                className="bg-primary/90 hover:bg-primary flex flex-row items-center"
-              >
-                <span>Añadir</span>
-              </Button>
+              <Button onClick={handleCall} disabled={!contact.fields.Telefono} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><Phone size={16} className="mr-1" /><span>Llamar</span></Button>
+              <Button onClick={handleEmail} disabled={!contact.fields.Email} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><Mail size={16} className="mr-1" /><span>Email</span></Button>
+              <Button onClick={handleWhatsApp} disabled={!contact.fields.Telefono} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><span>WhatsApp</span></Button>
+              <Button onClick={handleAddToContacts} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><span>Añadir</span></Button>
             </div>
           </div>
         </div>
@@ -369,3 +228,4 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
