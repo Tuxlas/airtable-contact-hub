@@ -37,8 +37,8 @@ const CompanyForm = ({ initialData, onSubmit, isLoading }: CompanyFormProps) => 
       Nombre: initialData?.fields.Nombre || "",
       Web: initialData?.fields.Web || "",
       Tags: initialData?.fields.Tags || [],
-      "Numero de Sedes": initialData?.fields["Numero de Sedes"] || 0,
-      "Numero de Contactos": initialData?.fields["Numero de Contactos"] || 0,
+      "Número de Sedes": initialData?.fields["Número de Sedes"] || 0,
+      "Número de Contactos": initialData?.fields["Número de Contactos"] || 0,
     },
   });
 

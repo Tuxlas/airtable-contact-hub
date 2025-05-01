@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -211,7 +212,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               <SelectContent>
                 {locations?.map((location) => (
                   <SelectItem key={location.id} value={location.id}>
-                    {location.fields.Ciudad || "Sin nombre"}, {location.fields.Pais || ""}
+                    {location.fields.Ciudad || "Sin nombre"}, {location.fields.País || ""}
                   </SelectItem>
                 ))}
               </SelectContent>

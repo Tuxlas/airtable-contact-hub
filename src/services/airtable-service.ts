@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 const AIRTABLE_API_KEY = "pat9tJ0oxUIgtnzoq.fd104ea0b4866aa88fc66f2ab2c10d7ecf9507b1662873bff43c991978b733f6";
@@ -186,6 +187,44 @@ export const airtableService = {
           console.log("Converting 'Pais' field to 'País'");
           updatedFields['País'] = updatedFields['Pais'];
           delete updatedFields['Pais'];
+        }
+        
+        fields = updatedFields;
+      }
+      
+      // Also fix field name errors for Sedes table
+      if (tableName === "Sedes") {
+        const updatedFields = { ...fields } as any;
+        
+        if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
+          console.log("Converting 'Direccion' field to 'Dirección'");
+          updatedFields['Dirección'] = updatedFields['Direccion'];
+          delete updatedFields['Direccion'];
+        }
+        
+        if ('Pais' in updatedFields && !('País' in updatedFields)) {
+          console.log("Converting 'Pais' field to 'País'");
+          updatedFields['País'] = updatedFields['Pais'];
+          delete updatedFields['Pais'];
+        }
+        
+        fields = updatedFields;
+      }
+      
+      // Fix field name errors for Empresas table
+      if (tableName === "Empresas") {
+        const updatedFields = { ...fields } as any;
+        
+        if ('Numero de Sedes' in updatedFields && !('Número de Sedes' in updatedFields)) {
+          console.log("Converting 'Numero de Sedes' to 'Número de Sedes'");
+          updatedFields['Número de Sedes'] = updatedFields['Numero de Sedes'];
+          delete updatedFields['Numero de Sedes'];
+        }
+        
+        if ('Numero de Contactos' in updatedFields && !('Número de Contactos' in updatedFields)) {
+          console.log("Converting 'Numero de Contactos' to 'Número de Contactos'");
+          updatedFields['Número de Contactos'] = updatedFields['Numero de Contactos'];
+          delete updatedFields['Numero de Contactos'];
         }
         
         fields = updatedFields;

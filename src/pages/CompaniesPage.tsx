@@ -38,7 +38,7 @@ const CompaniesPage = () => {
   const filteredLocations = locations?.filter((location) => {
     const searchLower = searchQuery.toLowerCase();
     const ciudad = location.fields.Ciudad?.toLowerCase() || "";
-    const pais = location.fields.Pais?.toLowerCase() || "";
+    const pais = location.fields.País?.toLowerCase() || "";
     return ciudad.includes(searchLower) || pais.includes(searchLower);
   });
 
@@ -81,18 +81,18 @@ const CompaniesPage = () => {
                       </h3>
                     </div>
                     <div className="text-sm text-text-body">
-                      {company.fields["Numero de Contactos"] !== undefined && (
+                      {company.fields["Número de Contactos"] !== undefined && (
                         <p>
-                          {company.fields["Numero de Contactos"]} contacto
-                          {company.fields["Numero de Contactos"] !== 1
+                          {company.fields["Número de Contactos"]} contacto
+                          {company.fields["Número de Contactos"] !== 1
                             ? "s"
                             : ""}
                         </p>
                       )}
-                      {company.fields["Numero de Sedes"] !== undefined && (
+                      {company.fields["Número de Sedes"] !== undefined && (
                         <p>
-                          {company.fields["Numero de Sedes"]} sede
-                          {company.fields["Numero de Sedes"] !== 1 ? "s" : ""}
+                          {company.fields["Número de Sedes"]} sede
+                          {company.fields["Número de Sedes"] !== 1 ? "s" : ""}
                         </p>
                       )}
                     </div>
@@ -131,12 +131,12 @@ const CompaniesPage = () => {
                       <MapPin className="mr-2 text-gray-500" size={20} />
                       <h3 className="font-medium text-text-title">
                         {location.fields.Ciudad || "Sin ciudad"}
-                        {location.fields.Pais && `, ${location.fields.Pais}`}
+                        {location.fields.País && `, ${location.fields.País}`}
                       </h3>
                     </div>
-                    {location.fields.Direccion && (
+                    {location.fields.Dirección && (
                       <p className="text-sm text-text-body">
-                        {location.fields.Direccion}
+                        {location.fields.Dirección}
                       </p>
                     )}
                   </Card>

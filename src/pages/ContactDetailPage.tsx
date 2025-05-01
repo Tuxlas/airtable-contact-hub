@@ -155,7 +155,7 @@ const ContactDetailPage = () => {
   }
 
   // Use Teléfono field with accent for display
-  const phoneNumber = contact.fields.Teléfono || "";
+  const phoneNumber = contact?.fields.Teléfono || "";
 
   return (
     <MainLayout>
