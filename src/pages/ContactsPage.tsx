@@ -14,7 +14,6 @@ const ContactsPage = () => {
   const { data: contacts, isLoading, isError, error } = useContacts();
 
   useEffect(() => {
-    // Mostrar mensaje si hay un error en la carga de datos
     if (isError) {
       console.error("Error al cargar contactos:", error);
       toast({
@@ -25,14 +24,12 @@ const ContactsPage = () => {
     }
   }, [isError, error]);
 
-  // Debugging para verificar datos
   useEffect(() => {
     if (contacts) {
       console.log("Contactos cargados:", contacts.length);
     }
   }, [contacts]);
 
-  // Filtrar contactos según la búsqueda
   const filteredContacts = contacts?.filter((contact) => {
     const searchLower = searchQuery.toLowerCase();
     const nombre = contact.fields.Nombre?.toLowerCase() || "";
@@ -51,14 +48,12 @@ const ContactsPage = () => {
   return (
     <MainLayout title="Contactos">
       <div className="mb-4">
-        <div className="relative">
-          <Input
-            placeholder="Buscar contactos..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="mb-4"
-          />
-        </div>
+        <Input
+          placeholder="Buscar contactos..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="mb-4"
+        />
       </div>
 
       {isLoading ? (
@@ -99,4 +94,5 @@ const ContactsPage = () => {
 };
 
 export default ContactsPage;
+
 
