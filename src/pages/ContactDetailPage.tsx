@@ -151,8 +151,9 @@ const ContactDetailPage = () => {
     );
   }
 
-  const phoneNumber = contact?.fields.Teléfono || "";
-  const fullName = `${contact.fields.Nombre || ""} ${contact.fields.Apellidos || ""}`;
+  const nombreCompleto = contact.fields.Apellidos 
+    ? `${contact.fields.Nombre || ""} ${contact.fields.Apellidos}` 
+    : contact.fields.Nombre || "";
 
   return (
     <MainLayout>
@@ -206,7 +207,7 @@ const ContactDetailPage = () => {
               <div className="w-20 h-20 rounded-full overflow-hidden mr-4">
                 <img
                   src={contact.fields["Tarjeta Escaneada"][0]}
-                  alt={fullName}
+                  alt={nombreCompleto}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -217,7 +218,7 @@ const ContactDetailPage = () => {
             )}
             <div>
               <h1 className="text-2xl font-medium text-text-title mb-1">
-                {fullName || "Sin nombre"}
+                {nombreCompleto || "Sin nombre"}
               </h1>
               <p className="text-text-body">
                 {contact.fields.Cargo || "Sin cargo"}

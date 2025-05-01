@@ -25,13 +25,13 @@ const CompaniesPage = () => {
 
   const filteredCompanies = companies?.filter((company) => {
     const searchLower = searchQuery.toLowerCase();
-    const nombre = company.fields.Nombre?.toLowerCase() || "";
+    const nombre = company.fields.NombreEmpresa?.toLowerCase() || "";
     return nombre.includes(searchLower);
   });
 
   const filteredSectors = sectors?.filter((sector) => {
     const searchLower = searchQuery.toLowerCase();
-    const nombre = sector.fields.Nombre?.toLowerCase() || "";
+    const nombre = sector.fields.NombreSector?.toLowerCase() || "";
     return nombre.includes(searchLower);
   });
 
@@ -77,22 +77,22 @@ const CompaniesPage = () => {
                     <div className="flex items-center mb-2">
                       <Building className="mr-2 text-gray-500" size={20} />
                       <h3 className="font-medium text-text-title">
-                        {company.fields.Nombre || "Sin nombre"}
+                        {company.fields.NombreEmpresa || "Sin nombre"}
                       </h3>
                     </div>
                     <div className="text-sm text-text-body">
-                      {company.fields["Número de Contactos"] !== undefined && (
+                      {company.fields.NumeroContactos !== undefined && (
                         <p>
-                          {company.fields["Número de Contactos"]} contacto
-                          {company.fields["Número de Contactos"] !== 1
+                          {company.fields.NumeroContactos} contacto
+                          {company.fields.NumeroContactos !== 1
                             ? "s"
                             : ""}
                         </p>
                       )}
-                      {company.fields["Número de Sedes"] !== undefined && (
+                      {company.fields.NumeroSedes !== undefined && (
                         <p>
-                          {company.fields["Número de Sedes"]} sede
-                          {company.fields["Número de Sedes"] !== 1 ? "s" : ""}
+                          {company.fields.NumeroSedes} sede
+                          {company.fields.NumeroSedes !== 1 ? "s" : ""}
                         </p>
                       )}
                     </div>
@@ -173,12 +173,12 @@ const CompaniesPage = () => {
                     <div className="flex items-center mb-2">
                       <PieChart className="mr-2 text-gray-500" size={20} />
                       <h3 className="font-medium text-text-title">
-                        {sector.fields.Nombre || "Sin nombre"}
+                        {sector.fields.NombreSector || "Sin nombre"}
                       </h3>
                     </div>
-                    {sector.fields["Empresas Relacionadas"] && (
+                    {sector.fields.NumeroEmpresas && (
                       <p className="text-sm text-text-body">
-                        {sector.fields["Empresas Relacionadas"].length} empresas
+                        {sector.fields.NumeroEmpresas} empresas
                       </p>
                     )}
                   </Card>

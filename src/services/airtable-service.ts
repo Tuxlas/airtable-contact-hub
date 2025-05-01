@@ -224,16 +224,41 @@ export const airtableService = {
       if (tableName === "Empresas") {
         const updatedFields = { ...fields } as any;
         
-        if ('Numero de Sedes' in updatedFields && !('Número de Sedes' in updatedFields)) {
-          console.log("Converting 'Numero de Sedes' to 'Número de Sedes'");
-          updatedFields['Número de Sedes'] = updatedFields['Numero de Sedes'];
+        if ('Nombre' in updatedFields && !('NombreEmpresa' in updatedFields)) {
+          console.log("Converting 'Nombre' to 'NombreEmpresa'");
+          updatedFields['NombreEmpresa'] = updatedFields['Nombre'];
+          delete updatedFields['Nombre'];
+        }
+        
+        if ('Numero de Sedes' in updatedFields && !('NumeroSedes' in updatedFields)) {
+          console.log("Converting 'Numero de Sedes' to 'NumeroSedes'");
+          updatedFields['NumeroSedes'] = updatedFields['Numero de Sedes'];
           delete updatedFields['Numero de Sedes'];
         }
         
-        if ('Numero de Contactos' in updatedFields && !('Número de Contactos' in updatedFields)) {
-          console.log("Converting 'Numero de Contactos' to 'Número de Contactos'");
-          updatedFields['Número de Contactos'] = updatedFields['Numero de Contactos'];
+        if ('Numero de Contactos' in updatedFields && !('NumeroContactos' in updatedFields)) {
+          console.log("Converting 'Numero de Contactos' to 'NumeroContactos'");
+          updatedFields['NumeroContactos'] = updatedFields['Numero de Contactos'];
           delete updatedFields['Numero de Contactos'];
+        }
+        
+        fields = updatedFields;
+      }
+      
+      // Fix field name errors for Sectores table
+      if (tableName === "Sectores") {
+        const updatedFields = { ...fields } as any;
+        
+        if ('Nombre' in updatedFields && !('NombreSector' in updatedFields)) {
+          console.log("Converting 'Nombre' to 'NombreSector'");
+          updatedFields['NombreSector'] = updatedFields['Nombre'];
+          delete updatedFields['Nombre'];
+        }
+        
+        if ('Numero de Empresas' in updatedFields && !('NumeroEmpresas' in updatedFields)) {
+          console.log("Converting 'Numero de Empresas' to 'NumeroEmpresas'");
+          updatedFields['NumeroEmpresas'] = updatedFields['Numero de Empresas'];
+          delete updatedFields['Numero de Empresas'];
         }
         
         fields = updatedFields;

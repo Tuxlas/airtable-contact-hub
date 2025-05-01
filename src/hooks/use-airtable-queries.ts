@@ -244,8 +244,8 @@ export const useDashboardData = () => {
       )
       .slice(0, 5),
     companiesBySector: sectorsQuery.data?.map((sector) => ({
-      name: sector.fields.Nombre || "Sin nombre",
-      count: (sector.fields["Empresas Relacionadas"]?.length || 0),
+      name: sector.fields.NombreSector || "Sin nombre",
+      count: (sector.fields.Empresas?.length || 0),
     })),
   };
 

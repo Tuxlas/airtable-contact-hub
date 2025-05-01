@@ -50,10 +50,10 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       Apellidos: initialData?.fields.Apellidos || "",
       Cargo: initialData?.fields.Cargo || "",
       Email: initialData?.fields.Email || "",
-      Teléfono: initialData?.fields.Teléfono || "", // Con acento
-      Dirección: initialData?.fields.Dirección || "", // Con acento
+      Teléfono: initialData?.fields.Teléfono || "",
+      Dirección: initialData?.fields.Dirección || "",
       Ciudad: initialData?.fields.Ciudad || "",
-      País: initialData?.fields.País || "", // Con acento
+      País: initialData?.fields.País || "",
       Web: initialData?.fields.Web || "",
       Fuente: initialData?.fields.Fuente || "",
       WebEmpresa: initialData?.fields.WebEmpresa || "",
