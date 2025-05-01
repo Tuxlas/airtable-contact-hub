@@ -1,9 +1,10 @@
-import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import ContactForm from "@/components/contacts/ContactForm";
 import { useCreateContact } from "@/hooks/use-airtable-queries";
 import { ContactRecord } from "@/services/airtable-service";
+import { sanitizeRecord } from "@/services/airtable-service";
+import { toast } from "@/hooks/use-toast";
 
 const CreateContactPage = () => {
   const navigate = useNavigate();
@@ -11,23 +12,19 @@ const CreateContactPage = () => {
 
   const handleSubmit = async (data: ContactRecord) => {
     try {
-      // Normalización de campos relacionales e imagen
-      const formattedData: ContactRecord = {
-        ...data,
-        Empresa: data.Empresa ? [data.Empresa] : [],
-        Sede: data.Sede ? [data.Sede] : [],
-        Sector: data.Sector ? [data.Sector] : [],
-        TarjetaEscaneada: data.TarjetaEscaneada
-          ? [data.TarjetaEscaneada]
-          : [],
-      };
+      const sanitizedData = sanitizeRecord("Contactos", data);
 
-      const result = await createContact.mutateAsync(formattedData);
+      const result = await createContact.mutateAsync(sanitizedData);
       if (result?.id) {
         navigate(`/contacts/${result.id}`);
       }
     } catch (error) {
       console.error("Error creating contact:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear el contacto. Verifica los datos.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -44,3 +41,4 @@ const CreateContactPage = () => {
 };
 
 export default CreateContactPage;
+
