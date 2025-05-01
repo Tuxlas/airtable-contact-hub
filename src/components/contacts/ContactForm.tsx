@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +36,7 @@ interface ContactFormProps {
 
 const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => {
   const [imagePreview, setImagePreview] = useState<string | null>(
-    initialData?.fields["Tarjeta Escaneada"]?.[0] || null
+    initialData?.fields.TarjetaEscaneada?.[0] || null
   );
 
   const { data: companies } = useCompanies();
@@ -50,10 +49,10 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       Apellidos: initialData?.fields.Apellidos || "",
       Cargo: initialData?.fields.Cargo || "",
       Email: initialData?.fields.Email || "",
-      Teléfono: initialData?.fields.Teléfono || "",
-      Dirección: initialData?.fields.Dirección || "",
+      Telefono: initialData?.fields.Telefono || "",
+      Direccion: initialData?.fields.Direccion || "",
       Ciudad: initialData?.fields.Ciudad || "",
-      País: initialData?.fields.País || "",
+      Pais: initialData?.fields.Pais || "",
       Web: initialData?.fields.Web || "",
       Fuente: initialData?.fields.Fuente || "",
       WebEmpresa: initialData?.fields.WebEmpresa || "",
@@ -65,7 +64,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 1MB)
     if (file.size > 1024 * 1024) {
       toast({
         title: "Error",
@@ -84,11 +82,9 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   };
 
   const handleSubmit = (data: ContactRecord) => {
-    // Add image if there's a preview
     if (imagePreview) {
-      data["Tarjeta Escaneada"] = [imagePreview];
+      data.TarjetaEscaneada = [imagePreview];
     }
-    console.log("Submitting contact data:", data);
     onSubmit(data);
   };
 
@@ -179,12 +175,12 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormField
             control={form.control}
-            name="Teléfono"
+            name="Telefono"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Teléfono</FormLabel>
+                <FormLabel>Telefono</FormLabel>
                 <FormControl>
-                  <Input placeholder="Teléfono" {...field} />
+                  <Input placeholder="Telefono" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -225,7 +221,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               <SelectContent>
                 {locations?.map((location) => (
                   <SelectItem key={location.id} value={location.id}>
-                    {location.fields.Ciudad || "Sin nombre"}, {location.fields.País || ""}
+                    {location.fields.Ciudad || "Sin nombre"}, {location.fields.Pais || ""}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -255,12 +251,12 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormField
             control={form.control}
-            name="Dirección"
+            name="Direccion"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Dirección</FormLabel>
+                <FormLabel>Direccion</FormLabel>
                 <FormControl>
-                  <Input placeholder="Dirección" {...field} />
+                  <Input placeholder="Direccion" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -281,12 +277,12 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormField
             control={form.control}
-            name="País"
+            name="Pais"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>País</FormLabel>
+                <FormLabel>Pais</FormLabel>
                 <FormControl>
-                  <Input placeholder="País" {...field} />
+                  <Input placeholder="Pais" {...field} />
                 </FormControl>
               </FormItem>
             )}
