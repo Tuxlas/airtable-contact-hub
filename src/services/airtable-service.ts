@@ -15,17 +15,16 @@ export type ContactRecord = {
   Apellidos?: string;
   Cargo?: string;
   Email?: string;
-  Teléfono?: string;
+  Telefono?: string;
   Empresa?: string[];
   Sede?: string[];
   Sector?: string[];
-  Dirección?: string;
+  Direccion?: string;
   Ciudad?: string;
-  País?: string;
+  Pais?: string;
   Fuente?: string;
-  "Tarjeta Escaneada"?: string[];
-  Web?: string;
-  "Fecha de Creación"?: string;
+  TarjetaEscaneada?: string[];
+  FechaCreacion?: string;
   WebEmpresa?: string;
   SectorName?: string;
 };
@@ -39,14 +38,14 @@ export type CompanyRecord = {
   Tags?: string[];
   NumeroContactos?: number;
   Contactos?: string[];
-  "Fecha de Creación"?: string;
+  FechaCreacion?: string;
 };
 
 export type SedeRecord = {
   Ciudad?: string;
   Empresa?: string[];
-  País?: string;
-  Dirección?: string;
+  Pais?: string;
+  Direccion?: string;
   TotalContactos?: number;
   Contactos?: string[];
 };
@@ -57,65 +56,6 @@ export type SectorRecord = {
   NumeroEmpresas?: number;
   Contactos?: string[];
 };
-
-// FUNCION UTIL para corregir campos (Teléfono, País, etc.)
-function fixFieldNames(tableName: string, fields: any): any {
-  const updatedFields = { ...fields };
-
-  if (tableName === "Contactos") {
-    if ('Telefono' in updatedFields && !('Teléfono' in updatedFields)) {
-      updatedFields['Teléfono'] = updatedFields['Telefono'];
-      delete updatedFields['Telefono'];
-    }
-    if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
-      updatedFields['Dirección'] = updatedFields['Direccion'];
-      delete updatedFields['Direccion'];
-    }
-    if ('Pais' in updatedFields && !('País' in updatedFields)) {
-      updatedFields['País'] = updatedFields['Pais'];
-      delete updatedFields['Pais'];
-    }
-  }
-
-  if (tableName === "Sedes") {
-    if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
-      updatedFields['Dirección'] = updatedFields['Direccion'];
-      delete updatedFields['Direccion'];
-    }
-    if ('Pais' in updatedFields && !('País' in updatedFields)) {
-      updatedFields['País'] = updatedFields['Pais'];
-      delete updatedFields['Pais'];
-    }
-  }
-
-  if (tableName === "Empresas") {
-    if ('Nombre' in updatedFields && !('NombreEmpresa' in updatedFields)) {
-      updatedFields['NombreEmpresa'] = updatedFields['Nombre'];
-      delete updatedFields['Nombre'];
-    }
-    if ('Numero de Sedes' in updatedFields && !('NumeroSedes' in updatedFields)) {
-      updatedFields['NumeroSedes'] = updatedFields['Numero de Sedes'];
-      delete updatedFields['Numero de Sedes'];
-    }
-    if ('Numero de Contactos' in updatedFields && !('NumeroContactos' in updatedFields)) {
-      updatedFields['NumeroContactos'] = updatedFields['Numero de Contactos'];
-      delete updatedFields['Numero de Contactos'];
-    }
-  }
-
-  if (tableName === "Sectores") {
-    if ('Nombre' in updatedFields && !('NombreSector' in updatedFields)) {
-      updatedFields['NombreSector'] = updatedFields['Nombre'];
-      delete updatedFields['Nombre'];
-    }
-    if ('Numero de Empresas' in updatedFields && !('NumeroEmpresas' in updatedFields)) {
-      updatedFields['NumeroEmpresas'] = updatedFields['Numero de Empresas'];
-      delete updatedFields['Numero de Empresas'];
-    }
-  }
-
-  return updatedFields;
-}
 
 export const airtableService = {
   async fetchRecords<T>(tableName: string): Promise<AirtableRecord<T>[]> {
@@ -166,21 +106,22 @@ export const airtableService = {
 
   async createRecord<T>(tableName: string, fields: T): Promise<AirtableRecord<T> | null> {
     try {
-      const fixedFields = fixFieldNames(tableName, fields);
-
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields: fixedFields }),
+        body: JSON.stringify({ fields }),
       });
 
       if (!response.ok) throw new Error(`Error creating record`);
 
       const data = await response.json();
-      toast({ title: "Éxito", description: `Registro creado en ${tableName}` });
+      toast({
+        title: "Éxito",
+        description: `Registro creado en ${tableName}`,
+      });
       return data;
     } catch (error) {
       toast({
@@ -194,15 +135,13 @@ export const airtableService = {
 
   async updateRecord<T>(tableName: string, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
     try {
-      const fixedFields = fixFieldNames(tableName, fields);
-
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields: fixedFields }),
+        body: JSON.stringify({ fields }),
       });
 
       if (!response.ok) {
@@ -220,7 +159,10 @@ export const airtableService = {
       }
 
       const data = await response.json();
-      toast({ title: "Éxito", description: `Registro actualizado en ${tableName}` });
+      toast({
+        title: "Éxito",
+        description: `Registro actualizado en ${tableName}`,
+      });
       return data;
     } catch (error) {
       toast({
@@ -244,7 +186,10 @@ export const airtableService = {
 
       if (!response.ok) throw new Error(`Error deleting record`);
 
-      toast({ title: "Éxito", description: `Registro eliminado de ${tableName}` });
+      toast({
+        title: "Éxito",
+        description: `Registro eliminado de ${tableName}`,
+      });
       return true;
     } catch (error) {
       toast({
@@ -269,4 +214,5 @@ export const airtableService = {
     }
   },
 };
+
 
