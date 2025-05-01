@@ -26,6 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
+import { sanitizeRecord } from "@/services/airtable-service";
 
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,18 +42,10 @@ const ContactDetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmit = async (data: ContactRecord) => {
-    const cleanData: ContactRecord = {
-      ...data,
-      Empresa: data.Empresa || [],
-      Sede: data.Sede || [],
-      Sector: data.Sector || [],
-      Telefono: data.Telefono || "",
-      Direccion: data.Direccion || "",
-      Pais: data.Pais || "",
-    };
+    const sanitizedData = sanitizeRecord("Contactos", data);
 
     try {
-      await updateContact.mutateAsync(cleanData);
+      await updateContact.mutateAsync(sanitizedData);
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating contact:", error);
@@ -116,7 +109,7 @@ const ContactDetailPage = () => {
       `EMAIL:${contact.fields.Email || ""}`,
       `ORG:${companyName || ""}`,
       `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
-      `URL:${contact.fields.Web || ""}`,
+      `URL:${contact.fields.WebEmpresa || ""}`,
       "END:VCARD"
     ].join("\n");
 
@@ -217,7 +210,6 @@ const ContactDetailPage = () => {
             {companyName && <div className="flex items-center"><Building size={18} className="mr-3 text-gray-500" /><span>{companyName}</span></div>}
             {(locationName || sectorName) && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{locationName || ""} {locationName && sectorName ? " - " : ""}{sectorName || ""}</span></div>}
             {contact.fields.Direccion && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Direccion}{contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}{contact.fields.Pais && `, ${contact.fields.Pais}`}</span></div>}
-            {contact.fields.Web && <div className="flex items-center"><Globe size={18} className="mr-3 text-gray-500" /><a href={contact.fields.Web.startsWith("http") ? contact.fields.Web : `https://${contact.fields.Web}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{contact.fields.Web}</a></div>}
             {contact.fields.WebEmpresa && <div className="flex items-center"><Globe size={18} className="mr-3 text-gray-500" /><a href={contact.fields.WebEmpresa.startsWith("http") ? contact.fields.WebEmpresa : `https://${contact.fields.WebEmpresa}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{contact.fields.WebEmpresa} (Empresa)</a></div>}
             {contact.fields.Fuente && <div className="flex items-start"><div className="mt-1"><Calendar size={18} className="mr-3 text-gray-500" /></div><div><p className="text-sm text-gray-500 mb-1">Fuente</p><p>{contact.fields.Fuente}</p></div></div>}
           </div>
@@ -238,5 +230,6 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
 
 
