@@ -1,3 +1,4 @@
+
 import MainLayout from "@/components/layout/MainLayout";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -170,28 +171,6 @@ const DashboardPage = () => {
         )}
       </div>
     </MainLayout>
-  );
-};
-
-const Avatar = (props) => {
-  const { children, ...rest } = props;
-  return (
-    <div className={`relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full ${props.className || ""}`} {...rest}>
-      {children}
-    </div>
-  );
-};
-
-const AvatarImage = (props) => {
-  return <img className={`aspect-square h-full w-full ${props.className || ""}`} {...props} />;
-};
-
-const AvatarFallback = (props) => {
-  const { children, ...rest } = props;
-  return (
-    <div className={`flex h-full w-full items-center justify-center rounded-full bg-muted ${props.className || ""}`} {...rest}>
-      {children}
-    </div>
   );
 };
 
