@@ -1,6 +1,9 @@
 import { toast } from "@/hooks/use-toast";
 
+// 🔐 Personal Access Token → desde variables de entorno
 const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN!;
+
+// 📌 BASE ID → fijo porque no cambiará
 const AIRTABLE_BASE_ID = "appVbaOLrHQGOQlgC";
 const AIRTABLE_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
 
@@ -285,6 +288,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
