@@ -107,7 +107,7 @@ const RECORD_FIELDS = {
   ],
 };
 
-const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
+export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
 
@@ -285,6 +285,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
