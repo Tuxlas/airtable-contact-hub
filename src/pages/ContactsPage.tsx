@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ContactCard from "@/components/contacts/ContactCard";
@@ -33,14 +32,17 @@ const ContactsPage = () => {
     }
   }, [contacts]);
 
+  // Filtrar contactos según la búsqueda
   const filteredContacts = contacts?.filter((contact) => {
     const searchLower = searchQuery.toLowerCase();
     const nombre = contact.fields.Nombre?.toLowerCase() || "";
+    const apellidos = contact.fields.Apellidos?.toLowerCase() || "";
     const cargo = contact.fields.Cargo?.toLowerCase() || "";
     const email = contact.fields.Email?.toLowerCase() || "";
-    
+
     return (
       nombre.includes(searchLower) ||
+      apellidos.includes(searchLower) ||
       cargo.includes(searchLower) ||
       email.includes(searchLower)
     );
@@ -97,3 +99,4 @@ const ContactsPage = () => {
 };
 
 export default ContactsPage;
+
