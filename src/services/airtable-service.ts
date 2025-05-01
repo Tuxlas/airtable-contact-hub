@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 const AIRTABLE_API_KEY = "pat9tJ0oxUIgtnzoq.fd104ea0b4866aa88fc66f2ab2c10d7ecf9507b1662873bff43c991978b733f6";
@@ -11,22 +10,22 @@ export type AirtableRecord<T> = {
   createdTime: string;
 };
 
-// Updated field names to match exactly what's in Airtable
+// Updated field names to match exactly what's in Airtable (with accents)
 export type ContactRecord = {
   Nombre?: string;
   Cargo?: string;
   Email?: string;
-  Teléfono?: string; // Fixed field name from "Telefono" to "Teléfono" with accent
+  Teléfono?: string; // With accent
   Empresa?: string[];
   Sede?: string[];
   Sector?: string[];
-  Direccion?: string;
+  Dirección?: string; // With accent
   Ciudad?: string;
-  Pais?: string;
+  País?: string; // With accent
   Fuente?: string;
   "Tarjeta Escaneada"?: string[];
   Web?: string;
-  "Fecha de Creacion"?: string;
+  "Fecha de Creación"?: string; // With accent
 };
 
 export type CompanyRecord = {
@@ -34,15 +33,15 @@ export type CompanyRecord = {
   Sector?: string[];
   Web?: string;
   Tags?: string[];
-  "Numero de Sedes"?: number;
-  "Numero de Contactos"?: number;
+  "Número de Sedes"?: number; // With accent
+  "Número de Contactos"?: number; // With accent
   "Contactos Relacionados"?: string[];
 };
 
 export type SedeRecord = {
   Ciudad?: string;
-  Pais?: string;
-  Direccion?: string;
+  País?: string; // With accent
+  Dirección?: string; // With accent
   Empresa?: string[];
   "Contactos Relacionados"?: string[];
 };
@@ -166,12 +165,29 @@ export const airtableService = {
     try {
       console.log(`Updating record ${recordId} in ${tableName}...`, fields);
       
-      // Fix common field name errors - this helps with the Telefono/Teléfono issue
-      if (tableName === "Contactos" && 'Telefono' in fields && !('Teléfono' in fields)) {
-        console.log("Converting 'Telefono' field to 'Teléfono'");
+      // Fix common field name errors - this helps with the accent issues
+      if (tableName === "Contactos") {
         const updatedFields = { ...fields } as any;
-        updatedFields['Teléfono'] = updatedFields['Telefono'];
-        delete updatedFields['Telefono'];
+        
+        // Handle specific field name corrections
+        if ('Telefono' in updatedFields && !('Teléfono' in updatedFields)) {
+          console.log("Converting 'Telefono' field to 'Teléfono'");
+          updatedFields['Teléfono'] = updatedFields['Telefono'];
+          delete updatedFields['Telefono'];
+        }
+        
+        if ('Direccion' in updatedFields && !('Dirección' in updatedFields)) {
+          console.log("Converting 'Direccion' field to 'Dirección'");
+          updatedFields['Dirección'] = updatedFields['Direccion'];
+          delete updatedFields['Direccion'];
+        }
+        
+        if ('Pais' in updatedFields && !('País' in updatedFields)) {
+          console.log("Converting 'Pais' field to 'País'");
+          updatedFields['País'] = updatedFields['Pais'];
+          delete updatedFields['Pais'];
+        }
+        
         fields = updatedFields;
       }
       

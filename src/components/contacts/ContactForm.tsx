@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,10 +52,10 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       Nombre: initialData?.fields.Nombre || "",
       Cargo: initialData?.fields.Cargo || "",
       Email: initialData?.fields.Email || "",
-      Telefono: initialData?.fields.Telefono || "",
-      Direccion: initialData?.fields.Direccion || "",
+      Teléfono: initialData?.fields.Teléfono || "", // Fixed: Teléfono with accent
+      Dirección: initialData?.fields.Dirección || "",
       Ciudad: initialData?.fields.Ciudad || "",
-      Pais: initialData?.fields.Pais || "",
+      País: initialData?.fields.País || "",
       Web: initialData?.fields.Web || "",
       Fuente: initialData?.fields.Fuente || "",
     },
@@ -166,7 +165,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormField
             control={form.control}
-            name="Telefono"
+            name="Teléfono"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Teléfono</FormLabel>
@@ -242,7 +241,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormField
             control={form.control}
-            name="Direccion"
+            name="Dirección"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Dirección</FormLabel>
@@ -268,7 +267,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormField
             control={form.control}
-            name="Pais"
+            name="País"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>País</FormLabel>

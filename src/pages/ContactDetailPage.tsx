@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate, Link } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import {
@@ -46,15 +45,7 @@ const ContactDetailPage = () => {
   const handleSubmit = async (data: ContactRecord) => {
     try {
       console.log("Updating contact with data:", data);
-      // Fix field name if needed (our form might use Telefono but Airtable uses Teléfono)
-      if (data.Telefono && !data.Teléfono) {
-        const fixedData = {...data} as any;
-        fixedData.Teléfono = fixedData.Telefono;
-        delete fixedData.Telefono;
-        await updateContact.mutateAsync(fixedData);
-      } else {
-        await updateContact.mutateAsync(data);
-      }
+      await updateContact.mutateAsync(data);
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating contact:", error);
@@ -122,7 +113,7 @@ const ContactDetailPage = () => {
       `TEL:${contact.fields.Teléfono || ""}`,
       `EMAIL:${contact.fields.Email || ""}`,
       `ORG:${companyName || ""}`,
-      `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
+      `ADR:;;${contact.fields.Dirección || ""};${contact.fields.Ciudad || ""};${contact.fields.País || ""}`,
       `URL:${contact.fields.Web || ""}`,
       "END:VCARD"
     ].join("\n");
@@ -270,13 +261,13 @@ const ContactDetailPage = () => {
               </div>
             )}
 
-            {contact.fields.Direccion && (
+            {contact.fields.Dirección && (
               <div className="flex items-center">
                 <MapPin size={18} className="mr-3 text-gray-500" />
                 <span>
-                  {contact.fields.Direccion}
+                  {contact.fields.Dirección}
                   {contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}
-                  {contact.fields.Pais && `, ${contact.fields.Pais}`}
+                  {contact.fields.País && `, ${contact.fields.País}`}
                 </span>
               </div>
             )}
