@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import {
   ContactRecord,
   AirtableRecord,
+  sanitizeRecord
 } from "@/services/airtable-service";
 import { 
   useCompanies,
@@ -53,7 +54,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       Direccion: initialData?.fields.Direccion || "",
       Ciudad: initialData?.fields.Ciudad || "",
       Pais: initialData?.fields.Pais || "",
-      Web: initialData?.fields.Web || "",
       Fuente: initialData?.fields.Fuente || "",
       WebEmpresa: initialData?.fields.WebEmpresa || "",
       SectorName: initialData?.fields.SectorName || "",
@@ -85,21 +85,13 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   };
 
   const handleSubmit = (data: ContactRecord) => {
-    const cleanData: ContactRecord = {
-      ...data,
-      Telefono: data.Telefono || "",
-      Direccion: data.Direccion || "",
-      Pais: data.Pais || "",
-      Empresa: data.Empresa || [],
-      Sede: data.Sede || [],
-      Sector: data.Sector || [],
-    };
+    const sanitizedData = sanitizeRecord("Contactos", data);
 
     if (imagePreview) {
-      cleanData.TarjetaEscaneada = [imagePreview];
+      sanitizedData.TarjetaEscaneada = [imagePreview];
     }
 
-    onSubmit(cleanData);
+    onSubmit(sanitizedData);
   };
 
   return (
@@ -144,7 +136,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             { name: "Direccion", label: "Dirección" },
             { name: "Ciudad", label: "Ciudad" },
             { name: "Pais", label: "País" },
-            { name: "Web", label: "Web" },
             { name: "WebEmpresa", label: "Web de la Empresa" },
             { name: "Fuente", label: "Fuente" },
           ].map(({ name, label }) => (
@@ -238,4 +229,5 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
