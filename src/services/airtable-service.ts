@@ -7,6 +7,10 @@ const AIRTABLE_ACCESS_TOKEN = process.env.AIRTABLE_ACCESS_TOKEN!;
 const AIRTABLE_BASE_ID = "appVbaOLrHQGOQlgC";
 const AIRTABLE_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
 
+// ---------------------------
+// TYPES
+// ---------------------------
+
 export type AirtableRecord<T> = {
   id: string;
   fields: T;
@@ -18,7 +22,7 @@ export type ContactRecord = {
   Apellidos?: string;
   Cargo?: string;
   Email?: string;
-  Telefono?: string;
+  Telefono?: number;
   Empresa?: string[];
   Sede?: string[];
   Sector?: string[];
@@ -26,16 +30,16 @@ export type ContactRecord = {
   Ciudad?: string;
   Pais?: string;
   Fuente?: string;
-  TarjetaEscaneada?: string[];
+  TarjetaEscaneada?: string[]; // base64 o URL (sanitized later)
   FechaCreacion?: string;
-  WebEmpresa?: string;
-  SectorName?: string;
+  WebEmpresa?: string[]; // Lookup → se ignora en create/update
+  SectorName?: string[]; // Lookup → se ignora en create/update
 };
 
 export type CompanyRecord = {
   NombreEmpresa?: string;
   Sector?: string[];
-  WebEmpresa?: string;
+  WebEmpresa?: string[];
   Sedes?: string[];
   NumeroSedes?: number;
   Tags?: string[];
@@ -80,13 +84,11 @@ const RECORD_FIELDS = {
     "Fuente",
     "TarjetaEscaneada",
     "FechaCreacion",
-    "WebEmpresa",
-    "SectorName",
   ],
   Empresas: [
     "NombreEmpresa",
     "Sector",
-    "WebEmpresa",
+    "WebEmpresa", // Lookup (ignored on create/update)
     "Sedes",
     "NumeroSedes",
     "Tags",
@@ -115,8 +117,20 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
   const sanitized: any = {};
 
   allowedFields.forEach((field) => {
-    if (data[field] !== undefined) {
-      sanitized[field] = data[field];
+    const value = data[field];
+
+    if (value !== undefined) {
+      // Ignorar campos de solo lectura (WebEmpresa y SectorName)
+      if (field === "WebEmpresa" || field === "SectorName") return;
+
+      // TarjetaEscaneada debe tener formato de attachments
+      if (field === "TarjetaEscaneada" && Array.isArray(value)) {
+        sanitized[field] = value.map((v: string) => ({
+          url: v,
+        }));
+      } else {
+        sanitized[field] = value;
+      }
     }
   });
 
@@ -184,7 +198,9 @@ export const airtableService = {
           Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields: sanitizedFields }),
+        body: JSON.stringify({
+          records: [{ fields: sanitizedFields }],
+        }),
       });
 
       if (!response.ok) throw new Error(`Error creating record`);
@@ -194,7 +210,7 @@ export const airtableService = {
         title: "Éxito",
         description: `Registro creado en ${tableName}`,
       });
-      return data;
+      return data.records[0];
     } catch (error) {
       toast({
         title: "Error",
@@ -209,35 +225,25 @@ export const airtableService = {
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
 
-      const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
+      const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${AIRTABLE_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fields: sanitizedFields }),
+        body: JSON.stringify({
+          records: [{ id: recordId, fields: sanitizedFields }],
+        }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        if (response.status === 422 && errorText.includes("Unknown field name")) {
-          const fieldMatch = errorText.match(/Unknown field name: "([^"]+)"/);
-          const fieldName = fieldMatch ? fieldMatch[1] : "unknown";
-          toast({
-            title: "Error de campo",
-            description: `El campo "${fieldName}" no existe en Airtable.`,
-            variant: "destructive",
-          });
-        }
-        throw new Error(`Error updating record`);
-      }
+      if (!response.ok) throw new Error(`Error updating record`);
 
       const data = await response.json();
       toast({
         title: "Éxito",
         description: `Registro actualizado en ${tableName}`,
       });
-      return data;
+      return data.records[0];
     } catch (error) {
       toast({
         title: "Error",
