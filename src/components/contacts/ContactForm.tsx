@@ -31,7 +31,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface ContactFormProps {
   initialData?: AirtableRecord<ContactRecord>;
-  onSubmit: (data: ContactRecord) => void;
+  onSubmit: (data: any) => void;
   isLoading: boolean;
 }
 
@@ -69,7 +69,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     location.fields.Empresa?.includes(selectedEmpresaId)
   );
 
-  // Autocompletar WebEmpresa y Sector al seleccionar Empresa
+  // Autocompletar WebEmpresa + Sector al seleccionar Empresa
   useEffect(() => {
     if (!selectedEmpresaId) return;
 
@@ -77,12 +77,11 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       (company) => company.id === selectedEmpresaId
     );
 
-    // WebEmpresa
     form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
 
-    // Sector
-    const sectorId = selectedCompany?.fields.Sector?.[0] || null;
-    form.setValue("Sector", sectorId ? [sectorId] : []);
+    if (selectedCompany?.fields.Sector?.[0]) {
+      form.setValue("Sector", [selectedCompany.fields.Sector[0]]);
+    }
   }, [selectedEmpresaId, companies, form]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +112,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       sanitizedData.TarjetaEscaneada = [imagePreview];
     }
 
-    // Validación manual de obligatorios
+    // Validación manual
     const requiredFields = ["Nombre", "Apellidos", "Email", "Empresa", "Sede"];
     let hasErrors = false;
 
@@ -132,7 +131,17 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
     if (hasErrors) return;
 
-    onSubmit(sanitizedData);
+    // Garantizar arrays vacíos en relaciones
+    ["Empresa", "Sede", "Sector"].forEach((field) => {
+      if (!sanitizedData[field]) sanitizedData[field] = [];
+    });
+
+    // Enviar ID en edición
+    if (initialData?.id) {
+      onSubmit({ id: initialData.id, fields: sanitizedData });
+    } else {
+      onSubmit(sanitizedData);
+    }
   };
 
   return (
@@ -155,7 +164,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
+          {[ 
             { name: "Nombre", label: "Nombre*" },
             { name: "Apellidos", label: "Apellidos*" },
             { name: "Cargo", label: "Cargo" },
@@ -176,18 +185,13 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
                     {label}
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={label}
-                      {...field}
-                      className={form.formState.errors[name as keyof ContactRecord] ? "border-red-500 placeholder-red-500" : ""}
-                    />
+                    <Input placeholder={label} {...field} className={form.formState.errors[name as keyof ContactRecord] ? "border-red-500 placeholder-red-500" : ""} />
                   </FormControl>
                 </FormItem>
               )}
             />
           ))}
 
-          {/* WebEmpresa solo visible en edición */}
           {initialData?.fields.WebEmpresa && (
             <FormItem>
               <FormLabel>Web de la Empresa</FormLabel>
@@ -233,20 +237,22 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             </Select>
           </FormItem>
 
-          {/* Sector solo visual */}
           <FormItem>
             <FormLabel>Sector</FormLabel>
-            <FormControl>
-              <Input
-                value={
-                  form.watch("Sector")?.length
-                    ? sectors?.find((s) => s.id === form.watch("Sector")?.[0])?.fields.NombreSector || ""
-                    : ""
-                }
-                disabled
-                className="bg-gray-100"
-              />
-            </FormControl>
+            <Select disabled value={form.watch("Sector")?.[0] || ""} onValueChange={() => {}}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Asignado automáticamente" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {sectors?.map((sector) => (
+                  <SelectItem key={sector.id} value={sector.id}>
+                    {sector.fields.NombreSector || "Sin nombre"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormItem>
         </div>
 
@@ -261,6 +267,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
 
 
