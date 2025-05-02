@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Phone, Mail, Building, ChevronRight, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -11,11 +10,11 @@ interface ContactCardProps {
 }
 
 const ContactCard = ({ contact }: ContactCardProps) => {
-  const { Nombre, Apellidos, Cargo, Email, Teléfono } = contact.fields;
+  const { Nombre, Apellidos, Cargo, Email, Telefono, WebEmpresa } = contact.fields;
   const nombreCompleto = Apellidos ? `${Nombre || ""} ${Apellidos}` : Nombre;
-  
-  const empresaNombre = contact.fields.Empresa && contact.fields.Empresa.length > 0 
-    ? contact.fields.Empresa[0] 
+
+  const empresaNombre = WebEmpresa && WebEmpresa.length > 0 
+    ? WebEmpresa[0]
     : null;
 
   return (
@@ -23,9 +22,9 @@ const ContactCard = ({ contact }: ContactCardProps) => {
       <Link to={`/contacts/${contact.id}`} className="flex items-center p-4 hover:bg-gray-50 relative">
         <div className="flex-shrink-0 mr-4">
           <Avatar className="h-12 w-12">
-            {contact.fields["Tarjeta Escaneada"] && contact.fields["Tarjeta Escaneada"].length > 0 ? (
+            {contact.fields.TarjetaEscaneada && contact.fields.TarjetaEscaneada.length > 0 ? (
               <AvatarImage 
-                src={contact.fields["Tarjeta Escaneada"][0]} 
+                src={contact.fields.TarjetaEscaneada[0]} 
                 alt={nombreCompleto || "Contacto"} 
                 className="object-cover"
               />
@@ -48,9 +47,9 @@ const ContactCard = ({ contact }: ContactCardProps) => {
               {Email}
             </p>
           )}
-          {Teléfono && (
+          {Telefono && (
             <p className="text-sm text-text-body">
-              {Teléfono}
+              {Telefono}
             </p>
           )}
         </div>
