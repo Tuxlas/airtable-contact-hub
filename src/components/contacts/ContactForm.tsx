@@ -63,8 +63,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     },
   });
 
-  const empresaId = form.watch("Empresa")?.[0];
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -129,7 +127,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Campos básicos */}
           {[
             { name: "Nombre", label: "Nombre*", required: true },
             { name: "Apellidos", label: "Apellidos*", required: true },
@@ -146,74 +143,78 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               key={name}
               control={form.control}
               name={name as keyof ContactRecord}
-              rules={{ required: required ? "Este campo es obligatorio" : false }}
-              render={({ field }) => (
+              rules={required ? { required: `${label} es obligatorio` } : undefined}
+              render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel>{label}</FormLabel>
                   <FormControl>
                     <Input placeholder={label} {...field} />
                   </FormControl>
+                  {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
                 </FormItem>
               )}
             />
           ))}
 
-          {/* Empresa (obligatorio) */}
-          <FormItem>
-            <FormLabel>Empresa*</FormLabel>
-            <Select 
-              onValueChange={(value) => form.setValue("Empresa", [value])}
-              defaultValue={initialData?.fields.Empresa?.[0]}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar empresa" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {companies?.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.fields.NombreEmpresa || "Sin nombre"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormItem>
+          {/* Empresa (Obligatorio) */}
+          <FormField
+            control={form.control}
+            name="Empresa"
+            rules={{ required: "Selecciona una empresa" }}
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>Empresa*</FormLabel>
+                <Select 
+                  onValueChange={(value) => form.setValue("Empresa", [value])}
+                  defaultValue={initialData?.fields.Empresa?.[0]}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar empresa" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {companies?.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.fields.NombreEmpresa || "Sin nombre"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
+              </FormItem>
+            )}
+          />
 
-          {/* Sede (obligatorio solo si hay Empresa) */}
-          {empresaId && (
-            <FormItem>
-              <FormLabel>Sede*</FormLabel>
-              <Select 
-                onValueChange={(value) => form.setValue("Sede", [value])}
-                defaultValue={initialData?.fields.Sede?.[0]}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar sede" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {locations?.map((location) => (
-                    <SelectItem key={location.id} value={location.id}>
-                      {location.fields.Ciudad || "Sin nombre"}, {location.fields.Pais || ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormItem>
-          )}
-
-          {/* Sector (solo lectura en edición) */}
-          {initialData && (
-            <FormItem>
-              <FormLabel>Sector (autogenerado)</FormLabel>
-              <Input
-                disabled
-                value={(initialData.fields.SectorName || []).join(", ")}
-              />
-            </FormItem>
-          )}
+          {/* Sede (Obligatorio) */}
+          <FormField
+            control={form.control}
+            name="Sede"
+            rules={{ required: "Selecciona una sede" }}
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>Sede*</FormLabel>
+                <Select 
+                  onValueChange={(value) => form.setValue("Sede", [value])}
+                  defaultValue={initialData?.fields.Sede?.[0]}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar sede" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {locations?.map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.fields.Ciudad || "Sin nombre"}, {location.fields.Pais || ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="flex justify-end">
