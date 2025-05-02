@@ -1,9 +1,11 @@
 import { toast } from "@/hooks/use-toast";
 
+// Variables de entorno
 const AIRTABLE_ACCESS_TOKEN = import.meta.env.VITE_AIRTABLE_ACCESS_TOKEN!;
 const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID!;
 const AIRTABLE_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
 
+// Tipos de registros
 export type AirtableRecord<T> = {
   id: string;
   fields: T;
@@ -57,6 +59,7 @@ export type SectorRecord = {
   Contactos?: string[];
 };
 
+// Campos válidos para cada tabla
 const RECORD_FIELDS = {
   Contactos: [
     "Nombre", "Apellidos", "Cargo", "Email", "Telefono",
@@ -75,35 +78,41 @@ const RECORD_FIELDS = {
   ]
 };
 
+// Campos obligatorios
+const REQUIRED_FIELDS: Record<keyof typeof RECORD_FIELDS, string[]> = {
+  Contactos: ["Nombre", "Apellidos", "Email", "Empresa", "Sede"],
+  Empresas: ["NombreEmpresa"],
+  Sedes: ["Ciudad", "Empresa"],
+  Sectores: ["NombreSector"]
+};
+
+// Sanitizar registros antes de enviar
 export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
+  const requiredFields = REQUIRED_FIELDS[tableName];
   const sanitized: any = {};
 
   allowedFields.forEach((field) => {
-    if (data[field] !== undefined) {
-      let value = data[field];
+    const value = data[field];
 
-      // Arrays → limpiar nulos/vacíos
-      if (Array.isArray(value)) {
-        value = value.filter((item) => item !== undefined && item !== null);
+    const isRequired = requiredFields.includes(field);
 
-        if (value.length === 0) {
-          return; // NO ENVIAR arrays vacíos
+    // Opcionales → no enviar si están vacíos
+    if (!isRequired) {
+      if (value === undefined || value === null) return;
+      if (typeof value === "string" && value.trim() === "") return;
+      if (Array.isArray(value) && value.length === 0) return;
+    }
+
+    // Sanitizar array de objetos (ejemplo relaciones Empresa, Sede)
+    if (Array.isArray(value)) {
+      sanitized[field] = value.map((item) => {
+        if (typeof item === "object" && item?.id) {
+          return item.id;
         }
-
-        value = value.map((item) => {
-          if (typeof item === "object" && item?.id) {
-            return item.id;
-          }
-          return item;
-        });
-      }
-
-      // No enviar valores vacíos/null
-      if (value === undefined || value === null || value === "") {
-        return;
-      }
-
+        return item;
+      });
+    } else {
       sanitized[field] = value;
     }
   });
@@ -111,6 +120,7 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
   return sanitized;
 };
 
+// Servicio de Airtable CRUD
 export const airtableService = {
   async fetchRecords<T>(tableName: keyof typeof RECORD_FIELDS): Promise<AirtableRecord<T>[]> {
     try {
