@@ -87,14 +87,14 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
   const LINKED_FIELDS = ["Empresa", "Sede", "Sector", "WebEmpresa", "SectorName"];
 
   allowedFields.forEach((field) => {
-    if (data[field] !== undefined) {
+    if (data[field] !== undefined && data[field] !== null && data[field] !== "") {
       let value = data[field];
 
       // Si es un array, sanitizar posibles objetos con id
       if (Array.isArray(value)) {
         value = value.map((item) => {
           if (typeof item === "object" && item?.id) {
-            return item.id; // Solo dejamos el id
+            return item.id; // Solo dejar ID
           }
           return item;
         });
@@ -102,7 +102,7 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
 
       // Forzar arrays en campos vinculados aunque venga como string
       if (LINKED_FIELDS.includes(field)) {
-        if (value !== undefined && !Array.isArray(value)) {
+        if (!Array.isArray(value)) {
           value = [value];
         }
       }
@@ -138,6 +138,8 @@ export const airtableService = {
   },
 
   async fetchRecord<T>(tableName: keyof typeof RECORD_FIELDS, recordId: string): Promise<AirtableRecord<T> | null> {
+    if (!recordId || typeof recordId !== "string") return null;
+
     try {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         headers: {
@@ -230,6 +232,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
