@@ -6,7 +6,6 @@ import {
   SedeRecord,
   SectorRecord,
   AirtableRecord,
-  sanitizeRecord,
 } from "@/services/airtable-service";
 
 // Tabla nombres
@@ -24,10 +23,7 @@ export const TABLES = {
 function useCreateRecord<T>(tableName: keyof typeof TABLES) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: T) => {
-      const sanitizedData = sanitizeRecord(tableName, data);
-      return airtableService.createRecord(tableName, sanitizedData);
-    },
+    mutationFn: (data: T) => airtableService.createRecord(tableName, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [tableName] }),
   });
 }
@@ -35,10 +31,7 @@ function useCreateRecord<T>(tableName: keyof typeof TABLES) {
 function useUpdateRecord<T>(tableName: keyof typeof TABLES, id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<T>) => {
-      const sanitizedData = sanitizeRecord(tableName, data);
-      return airtableService.updateRecord(tableName, id, sanitizedData);
-    },
+    mutationFn: (data: Partial<T>) => airtableService.updateRecord(tableName, id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [tableName] });
       queryClient.invalidateQueries({ queryKey: [tableName, id] });
@@ -67,8 +60,7 @@ export const useContacts = () =>
 export const useContact = (id: string) =>
   useQuery({
     queryKey: [TABLES.CONTACTS, id],
-    queryFn: () =>
-      id ? airtableService.fetchRecord<ContactRecord>(TABLES.CONTACTS, id) : Promise.resolve(null),
+    queryFn: () => id ? airtableService.fetchRecord<ContactRecord>(TABLES.CONTACTS, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -89,8 +81,7 @@ export const useCompanies = () =>
 export const useCompany = (id: string) =>
   useQuery({
     queryKey: [TABLES.COMPANIES, id],
-    queryFn: () =>
-      id ? airtableService.fetchRecord<CompanyRecord>(TABLES.COMPANIES, id) : Promise.resolve(null),
+    queryFn: () => id ? airtableService.fetchRecord<CompanyRecord>(TABLES.COMPANIES, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -111,8 +102,7 @@ export const useLocations = () =>
 export const useLocation = (id: string) =>
   useQuery({
     queryKey: [TABLES.LOCATIONS, id],
-    queryFn: () =>
-      id ? airtableService.fetchRecord<SedeRecord>(TABLES.LOCATIONS, id) : Promise.resolve(null),
+    queryFn: () => id ? airtableService.fetchRecord<SedeRecord>(TABLES.LOCATIONS, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -133,8 +123,7 @@ export const useSectors = () =>
 export const useSector = (id: string) =>
   useQuery({
     queryKey: [TABLES.SECTORS, id],
-    queryFn: () =>
-      id ? airtableService.fetchRecord<SectorRecord>(TABLES.SECTORS, id) : Promise.resolve(null),
+    queryFn: () => id ? airtableService.fetchRecord<SectorRecord>(TABLES.SECTORS, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -152,17 +141,8 @@ export const useDashboardData = () => {
   const locations = useLocations();
   const sectors = useSectors();
 
-  const isLoading =
-    contacts.isLoading ||
-    companies.isLoading ||
-    locations.isLoading ||
-    sectors.isLoading;
-
-  const isError =
-    contacts.isError ||
-    companies.isError ||
-    locations.isError ||
-    sectors.isError;
+  const isLoading = contacts.isLoading || companies.isLoading || locations.isLoading || sectors.isLoading;
+  const isError = contacts.isError || companies.isError || locations.isError || sectors.isError;
 
   const data = {
     totalContacts: contacts.data?.length || 0,
@@ -189,8 +169,3 @@ export function useGetRecordById<T>(
 ): T | undefined {
   return records?.find((r) => r.id === id)?.fields;
 }
-
-
-
-
-
