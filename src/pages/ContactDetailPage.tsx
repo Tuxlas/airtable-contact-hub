@@ -132,7 +132,7 @@ const ContactDetailPage = () => {
       `EMAIL:${contact.fields.Email || ""}`,
       `ORG:${companyName || ""}`,
       `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
-      `URL:${contact.fields.WebEmpresa || ""}`,
+      `URL:${contact.fields.WebEmpresa?.[0] || ""}`,
       "END:VCARD",
     ].join("\n");
 
@@ -225,8 +225,8 @@ const ContactDetailPage = () => {
             <p><Layers size={18} className="inline mr-2" /> {sectorName || "Sin sector"}</p>
             <p><MapPin size={18} className="inline mr-2" /> {contact.fields.Direccion || "Sin dirección"}</p>
             <p><Globe size={18} className="inline mr-2" />
-              {contact.fields.WebEmpresa ? (
-                <a href={contact.fields.WebEmpresa} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa}</a>
+              {contact.fields.WebEmpresa?.[0] ? (
+                <a href={contact.fields.WebEmpresa?.[0]} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa?.[0]}</a>
               ) : (
                 "Sin web de empresa"
               )}
@@ -247,4 +247,5 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
 
