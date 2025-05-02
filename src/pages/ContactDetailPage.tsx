@@ -52,16 +52,21 @@ const ContactDetailPage = () => {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  // Si no hay contacto y no está cargando → redirigir
+  // ➡️ REDIRECT si no existe el contacto
   useEffect(() => {
     if (!isLoading && !contact) {
+      toast({
+        title: "Contacto no encontrado",
+        description: "El contacto no existe o ha sido eliminado.",
+        variant: "destructive",
+      });
       navigate("/contacts");
     }
   }, [isLoading, contact, navigate]);
 
   const handleSubmit = async (data: ContactRecord) => {
-    const sanitizedData = sanitizeRecord("Contactos", data);
     try {
+      const sanitizedData = sanitizeRecord("Contactos", data);
       await updateContact.mutateAsync(sanitizedData);
       setIsEditing(false);
       toast({
@@ -91,6 +96,18 @@ const ContactDetailPage = () => {
       console.error("Error deleting contact:", error);
     }
   };
+
+  if (isLoading || !contact) {
+    return (
+      <MainLayout>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </MainLayout>
+    );
+  }
 
   const companyName = contact?.fields.Empresa?.[0]
     ? companies?.find((c) => c.id === contact.fields.Empresa?.[0])?.fields.NombreEmpresa
@@ -150,20 +167,6 @@ const ContactDetailPage = () => {
     link.href = url;
     link.click();
   };
-
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-6 w-1/2" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (!contact) return null; // ya redirigido con useEffect si no existe
 
   return (
     <MainLayout>
@@ -243,6 +246,7 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
 
 
 
