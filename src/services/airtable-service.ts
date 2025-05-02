@@ -87,31 +87,25 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
     if (data[field] !== undefined) {
       let value = data[field];
 
-      // Si es un array, sanitizar posibles objetos con id
+      // NO ENVIAR arrays vacíos ni strings vacíos
+      if (
+        (Array.isArray(value) && value.length === 0) ||
+        (typeof value === "string" && value.trim() === "")
+      ) {
+        return;
+      }
+
+      // Si es array con objetos con id → dejar solo los ids
       if (Array.isArray(value)) {
-        value = value.map((item) =>
-          typeof item === "object" && item?.id ? item.id : item
-        );
+        value = value.map((item) => {
+          if (typeof item === "object" && item?.id) {
+            return item.id;
+          }
+          return item;
+        });
       }
 
       sanitized[field] = value;
-    }
-  });
-
-  // → Asegurar que los campos de relación (arrays) estén como [] si son undefined o null
-  ["Empresa", "Sede", "Sector", "TarjetaEscaneada"].forEach((field) => {
-    if (sanitized[field] === undefined || sanitized[field] === null) {
-      sanitized[field] = [];
-    }
-  });
-
-  // → Asegurar que los campos de texto estén como "" si son undefined o null
-  [
-    "Nombre", "Apellidos", "Cargo", "Email", "Direccion", "Ciudad",
-    "Pais", "Fuente", "WebEmpresa", "SectorName", "Telefono"
-  ].forEach((field) => {
-    if (sanitized[field] === undefined || sanitized[field] === null) {
-      sanitized[field] = "";
     }
   });
 
@@ -234,18 +228,3 @@ export const airtableService = {
     }
   },
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
