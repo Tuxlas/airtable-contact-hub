@@ -78,16 +78,16 @@ const RECORD_FIELDS = {
   ]
 };
 
-// Campos que nunca deben enviarse (Lookups, Fórmulas, Automáticos)
-const IGNORED_FIELDS = ["WebEmpresa", "SectorName"];
-
 // Sanitizar registros antes de enviar
 export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
 
+  // Campos vinculados que deben ser siempre arrays
+  const LINKED_FIELDS = ["Empresa", "Sede", "Sector", "WebEmpresa", "SectorName"];
+
   allowedFields.forEach((field) => {
-    if (data[field] !== undefined && !IGNORED_FIELDS.includes(field)) {
+    if (data[field] !== undefined) {
       let value = data[field];
 
       // Si es un array, sanitizar posibles objetos con id
@@ -98,6 +98,13 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
           }
           return item;
         });
+      }
+
+      // Forzar arrays en campos vinculados aunque venga como string
+      if (LINKED_FIELDS.includes(field)) {
+        if (value !== undefined && !Array.isArray(value)) {
+          value = [value];
+        }
       }
 
       sanitized[field] = value;
@@ -223,6 +230,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
