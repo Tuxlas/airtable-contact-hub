@@ -13,7 +13,6 @@ const ContactsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: contacts, isLoading, isError, error } = useContacts();
 
-  // Mostrar errores si ocurre un problema al obtener los datos
   useEffect(() => {
     if (isError) {
       console.error("Error al cargar contactos:", error);
@@ -24,6 +23,12 @@ const ContactsPage = () => {
       });
     }
   }, [isError, error]);
+
+  useEffect(() => {
+    if (contacts) {
+      console.log("Contactos cargados:", contacts.length);
+    }
+  }, [contacts]);
 
   const filteredContacts = contacts?.filter((contact) => {
     const searchLower = searchQuery.toLowerCase();
@@ -89,4 +94,5 @@ const ContactsPage = () => {
 };
 
 export default ContactsPage;
+
 
