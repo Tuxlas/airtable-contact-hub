@@ -23,7 +23,7 @@ export const TABLES = {
 function useCreateRecord<T>(tableName: keyof typeof TABLES) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: T) => airtableService.createRecord<T>(tableName, data),
+    mutationFn: (data: T) => airtableService.createRecord(tableName, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [tableName] }),
   });
 }
@@ -31,7 +31,7 @@ function useCreateRecord<T>(tableName: keyof typeof TABLES) {
 function useUpdateRecord<T>(tableName: keyof typeof TABLES, id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<T>) => airtableService.updateRecord<T>(tableName, id, data),
+    mutationFn: (data: Partial<T>) => airtableService.updateRecord(tableName, id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [tableName] });
       queryClient.invalidateQueries({ queryKey: [tableName, id] });
@@ -60,7 +60,7 @@ export const useContacts = () =>
 export const useContact = (id: string) =>
   useQuery({
     queryKey: [TABLES.CONTACTS, id],
-    queryFn: () => id ? airtableService.fetchRecord<ContactRecord>(TABLES.CONTACTS, id) : Promise.resolve(null),
+    queryFn: () => airtableService.fetchRecord<ContactRecord>(TABLES.CONTACTS, id),
     enabled: !!id,
   });
 
@@ -81,7 +81,7 @@ export const useCompanies = () =>
 export const useCompany = (id: string) =>
   useQuery({
     queryKey: [TABLES.COMPANIES, id],
-    queryFn: () => id ? airtableService.fetchRecord<CompanyRecord>(TABLES.COMPANIES, id) : Promise.resolve(null),
+    queryFn: () => airtableService.fetchRecord<CompanyRecord>(TABLES.COMPANIES, id),
     enabled: !!id,
   });
 
@@ -102,7 +102,7 @@ export const useLocations = () =>
 export const useLocation = (id: string) =>
   useQuery({
     queryKey: [TABLES.LOCATIONS, id],
-    queryFn: () => id ? airtableService.fetchRecord<SedeRecord>(TABLES.LOCATIONS, id) : Promise.resolve(null),
+    queryFn: () => airtableService.fetchRecord<SedeRecord>(TABLES.LOCATIONS, id),
     enabled: !!id,
   });
 
@@ -123,7 +123,7 @@ export const useSectors = () =>
 export const useSector = (id: string) =>
   useQuery({
     queryKey: [TABLES.SECTORS, id],
-    queryFn: () => id ? airtableService.fetchRecord<SectorRecord>(TABLES.SECTORS, id) : Promise.resolve(null),
+    queryFn: () => airtableService.fetchRecord<SectorRecord>(TABLES.SECTORS, id),
     enabled: !!id,
   });
 
@@ -178,5 +178,6 @@ export function useGetRecordById<T>(
 ): T | undefined {
   return records?.find((r) => r.id === id)?.fields;
 }
+
 
 
