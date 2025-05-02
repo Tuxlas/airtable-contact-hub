@@ -63,6 +63,8 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     },
   });
 
+  const empresaId = form.watch("Empresa")?.[0];
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -127,22 +129,24 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Campos básicos */}
           {[
-            { name: "Nombre", label: "Nombre*" },
-            { name: "Apellidos", label: "Apellidos" },
+            { name: "Nombre", label: "Nombre*", required: true },
+            { name: "Apellidos", label: "Apellidos*", required: true },
             { name: "Cargo", label: "Cargo" },
-            { name: "Email", label: "Email" },
+            { name: "Email", label: "Email*", required: true },
             { name: "Telefono", label: "Teléfono" },
             { name: "Direccion", label: "Dirección" },
             { name: "Ciudad", label: "Ciudad" },
             { name: "Pais", label: "País" },
             { name: "WebEmpresa", label: "Web de la Empresa" },
             { name: "Fuente", label: "Fuente" },
-          ].map(({ name, label }) => (
+          ].map(({ name, label, required }) => (
             <FormField
               key={name}
               control={form.control}
               name={name as keyof ContactRecord}
+              rules={{ required: required ? "Este campo es obligatorio" : false }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{label}</FormLabel>
@@ -154,8 +158,9 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             />
           ))}
 
+          {/* Empresa (obligatorio) */}
           <FormItem>
-            <FormLabel>Empresa</FormLabel>
+            <FormLabel>Empresa*</FormLabel>
             <Select 
               onValueChange={(value) => form.setValue("Empresa", [value])}
               defaultValue={initialData?.fields.Empresa?.[0]}
@@ -175,47 +180,40 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             </Select>
           </FormItem>
 
-          <FormItem>
-            <FormLabel>Sede</FormLabel>
-            <Select 
-              onValueChange={(value) => form.setValue("Sede", [value])}
-              defaultValue={initialData?.fields.Sede?.[0]}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar sede" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {locations?.map((location) => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.fields.Ciudad || "Sin nombre"}, {location.fields.Pais || ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormItem>
+          {/* Sede (obligatorio solo si hay Empresa) */}
+          {empresaId && (
+            <FormItem>
+              <FormLabel>Sede*</FormLabel>
+              <Select 
+                onValueChange={(value) => form.setValue("Sede", [value])}
+                defaultValue={initialData?.fields.Sede?.[0]}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar sede" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {locations?.map((location) => (
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.fields.Ciudad || "Sin nombre"}, {location.fields.Pais || ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
 
-          <FormItem>
-            <FormLabel>Sector</FormLabel>
-            <Select 
-              onValueChange={(value) => form.setValue("Sector", [value])}
-              defaultValue={initialData?.fields.Sector?.[0]}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar sector" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {sectors?.map((sector) => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.fields.NombreSector || "Sin nombre"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormItem>
+          {/* Sector (solo lectura en edición) */}
+          {initialData && (
+            <FormItem>
+              <FormLabel>Sector (autogenerado)</FormLabel>
+              <Input
+                disabled
+                value={(initialData.fields.SectorName || []).join(", ")}
+              />
+            </FormItem>
+          )}
         </div>
 
         <div className="flex justify-end">
@@ -229,5 +227,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
 
