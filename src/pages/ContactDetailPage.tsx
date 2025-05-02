@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ContactForm from "@/components/contacts/ContactForm";
-import { Phone, Mail, Building, MapPin, Globe, Calendar, Trash2, Edit, UserRound } from "lucide-react";
+import { Phone, Mail, Building, MapPin, Globe, Calendar, Trash2, Edit, UserRound, Layers } from "lucide-react";
 import { useState } from "react";
 import { ContactRecord } from "@/services/airtable-service";
 import {
@@ -43,7 +43,6 @@ const ContactDetailPage = () => {
 
   const handleSubmit = async (data: ContactRecord) => {
     const sanitizedData = sanitizeRecord("Contactos", data);
-
     try {
       await updateContact.mutateAsync(sanitizedData);
       setIsEditing(false);
@@ -214,7 +213,7 @@ const ContactDetailPage = () => {
             {contact.fields.Telefono && <p><Phone size={18} className="inline mr-2" /> {contact.fields.Telefono}</p>}
             {companyName && <p><Building size={18} className="inline mr-2" /> {companyName}</p>}
             {locationName && <p><MapPin size={18} className="inline mr-2" /> {locationName}</p>}
-            {sectorName && <p><MapPin size={18} className="inline mr-2" /> {sectorName}</p>}
+            {sectorName && <p><Layers size={18} className="inline mr-2" /> {sectorName}</p>}
             {contact.fields.Direccion && <p><MapPin size={18} className="inline mr-2" /> {contact.fields.Direccion}</p>}
             {contact.fields.WebEmpresa && <p><Globe size={18} className="inline mr-2" /> <a href={contact.fields.WebEmpresa} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa}</a></p>}
             {contact.fields.Fuente && <p><Calendar size={18} className="inline mr-2" /> {contact.fields.Fuente}</p>}
@@ -233,3 +232,4 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
