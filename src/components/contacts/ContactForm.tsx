@@ -69,13 +69,20 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     location.fields.Empresa?.includes(selectedEmpresaId)
   );
 
-  // Autocompletar WebEmpresa al seleccionar Empresa
+  // Autocompletar WebEmpresa y Sector al seleccionar Empresa
   useEffect(() => {
     if (!selectedEmpresaId) return;
+
     const selectedCompany = companies?.find(
       (company) => company.id === selectedEmpresaId
     );
+
+    // WebEmpresa
     form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
+
+    // Sector
+    const sectorId = selectedCompany?.fields.Sector?.[0] || null;
+    form.setValue("Sector", sectorId ? [sectorId] : []);
   }, [selectedEmpresaId, companies, form]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,7 +155,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[ 
+          {[
             { name: "Nombre", label: "Nombre*" },
             { name: "Apellidos", label: "Apellidos*" },
             { name: "Cargo", label: "Cargo" },
@@ -226,22 +233,20 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             </Select>
           </FormItem>
 
+          {/* Sector solo visual */}
           <FormItem>
             <FormLabel>Sector</FormLabel>
-            <Select onValueChange={(value) => form.setValue("Sector", [value])} defaultValue={initialData?.fields.Sector?.[0]} disabled>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Asignado por la Empresa" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {sectors?.map((sector) => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.fields.NombreSector || "Sin nombre"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FormControl>
+              <Input
+                value={
+                  form.watch("Sector")?.length
+                    ? sectors?.find((s) => s.id === form.watch("Sector")?.[0])?.fields.NombreSector || ""
+                    : ""
+                }
+                disabled
+                className="bg-gray-100"
+              />
+            </FormControl>
           </FormItem>
         </div>
 
@@ -256,6 +261,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
 
 
