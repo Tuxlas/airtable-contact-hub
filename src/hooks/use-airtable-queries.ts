@@ -6,6 +6,7 @@ import {
   SedeRecord,
   SectorRecord,
   AirtableRecord,
+  sanitizeRecord,
 } from "@/services/airtable-service";
 
 // Tabla nombres
@@ -23,7 +24,10 @@ export const TABLES = {
 function useCreateRecord<T>(tableName: keyof typeof TABLES) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: T) => airtableService.createRecord(tableName, data),
+    mutationFn: (data: T) => {
+      const sanitizedData = sanitizeRecord(tableName, data);
+      return airtableService.createRecord(tableName, sanitizedData);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [tableName] }),
   });
 }
@@ -31,7 +35,10 @@ function useCreateRecord<T>(tableName: keyof typeof TABLES) {
 function useUpdateRecord<T>(tableName: keyof typeof TABLES, id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<T>) => airtableService.updateRecord(tableName, id, data),
+    mutationFn: (data: Partial<T>) => {
+      const sanitizedData = sanitizeRecord(tableName, data);
+      return airtableService.updateRecord(tableName, id, sanitizedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [tableName] });
       queryClient.invalidateQueries({ queryKey: [tableName, id] });
@@ -182,6 +189,7 @@ export function useGetRecordById<T>(
 ): T | undefined {
   return records?.find((r) => r.id === id)?.fields;
 }
+
 
 
 
