@@ -64,26 +64,24 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   });
 
   const selectedEmpresaId = form.watch("Empresa")?.[0] || "";
+
   const filteredLocations = locations?.filter((location) =>
     location.fields.Empresa?.includes(selectedEmpresaId)
   );
 
-  // Autocompletar WebEmpresa al seleccionar Empresa
+  // Autocompletar WebEmpresa y Sector al seleccionar Empresa
   useEffect(() => {
     if (!selectedEmpresaId) return;
 
-    const selectedCompany = companies?.find(
-      (company) => company.id === selectedEmpresaId
-    );
+    const selectedCompany = companies?.find((c) => c.id === selectedEmpresaId);
 
+    // Web de la empresa
     form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
 
-    // Autocompletar Sector
-    const sectorId = selectedCompany?.fields.Sector?.[0] || "";
+    // Sector (solo si existe en Empresa)
+    const sectorId = selectedCompany?.fields.Sector?.[0];
     if (sectorId) {
       form.setValue("Sector", [sectorId]);
-    } else {
-      form.setValue("Sector", []);
     }
   }, [selectedEmpresaId, companies, form]);
 
@@ -115,7 +113,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       sanitizedData.TarjetaEscaneada = [imagePreview];
     }
 
-    // Validación manual de campos obligatorios
     const requiredFields = ["Nombre", "Apellidos", "Email", "Empresa", "Sede"];
     let hasErrors = false;
 
@@ -234,23 +231,25 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             </Select>
           </FormItem>
 
-          <FormItem>
-            <FormLabel>Sector (Asignado)</FormLabel>
-            <Select disabled value={form.watch("Sector")?.[0] || ""} onValueChange={() => {}}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Asignado por la Empresa" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {sectors?.map((sector) => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.fields.NombreSector || "Sin nombre"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormItem>
+          {initialData && (
+            <FormItem>
+              <FormLabel>Sector</FormLabel>
+              <Select disabled defaultValue={form.watch("Sector")?.[0]}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Asignado por la Empresa" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {sectors?.map((sector) => (
+                    <SelectItem key={sector.id} value={sector.id}>
+                      {sector.fields.NombreSector || "Sin nombre"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
         </div>
 
         <div className="flex justify-end">
@@ -264,4 +263,5 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
