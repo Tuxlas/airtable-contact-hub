@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -12,19 +12,19 @@ import { useForm } from "react-hook-form";
 import {
   ContactRecord,
   AirtableRecord,
-  sanitizeRecord
+  sanitizeRecord,
 } from "@/services/airtable-service";
-import { 
+import {
   useCompanies,
   useLocations,
   useSectors,
 } from "@/hooks/use-airtable-queries";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Camera } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -69,6 +69,17 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     location.fields.Empresa?.includes(selectedEmpresaId)
   );
 
+  // Autocompletar WebEmpresa al seleccionar Empresa
+  useEffect(() => {
+    if (!selectedEmpresaId) return;
+
+    const selectedCompany = companies?.find(
+      (company) => company.id === selectedEmpresaId
+    );
+
+    form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
+  }, [selectedEmpresaId, companies, form]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -97,25 +108,34 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       sanitizedData.TarjetaEscaneada = [imagePreview];
     }
 
-    // Validación manual obligatorios
+    // Validación manual de obligatorios
     const requiredFields = ["Nombre", "Apellidos", "Email", "Empresa", "Sede"];
-    for (const field of requiredFields) {
-      if (!sanitizedData[field] || (Array.isArray(sanitizedData[field]) && sanitizedData[field].length === 0)) {
-        toast({
-          title: "Faltan datos",
-          description: `El campo ${field} es obligatorio.`,
-          variant: "destructive",
+    let hasErrors = false;
+
+    requiredFields.forEach((field) => {
+      if (
+        !sanitizedData[field] ||
+        (Array.isArray(sanitizedData[field]) && sanitizedData[field].length === 0)
+      ) {
+        form.setError(field as keyof ContactRecord, {
+          type: "manual",
+          message: "Este campo es obligatorio",
         });
-        return;
+        hasErrors = true;
       }
-    }
+    });
+
+    if (hasErrors) return;
 
     onSubmit(sanitizedData);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 mb-8">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6 mb-8"
+      >
         <div className="flex justify-center mb-6">
           <div className="relative">
             <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
@@ -129,8 +149,8 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
                 <Camera size={32} className="text-gray-400" />
               )}
             </div>
-            <label 
-              htmlFor="image-upload" 
+            <label
+              htmlFor="image-upload"
               className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full cursor-pointer"
             >
               <Camera size={16} />
@@ -146,7 +166,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[ 
+          {[
             { name: "Nombre", label: "Nombre*" },
             { name: "Apellidos", label: "Apellidos*" },
             { name: "Cargo", label: "Cargo" },
@@ -155,7 +175,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             { name: "Direccion", label: "Dirección" },
             { name: "Ciudad", label: "Ciudad" },
             { name: "Pais", label: "País" },
-            { name: "WebEmpresa", label: "Web de la Empresa" },
             { name: "Fuente", label: "Fuente" },
           ].map(({ name, label }) => (
             <FormField
@@ -166,21 +185,47 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
                 <FormItem>
                   <FormLabel>{label}</FormLabel>
                   <FormControl>
-                    <Input placeholder={label} {...field} />
+                    <Input
+                      placeholder={label}
+                      {...field}
+                      className={
+                        form.formState.errors[name as keyof ContactRecord]
+                          ? "border-red-500 placeholder-red-500"
+                          : ""
+                      }
+                    />
                   </FormControl>
                 </FormItem>
               )}
             />
           ))}
 
+          {/* WebEmpresa solo visible en edición */}
+          {initialData?.fields.WebEmpresa && (
+            <FormItem>
+              <FormLabel>Web de la Empresa</FormLabel>
+              <FormControl>
+                <Input
+                  value={form.watch("WebEmpresa")}
+                  disabled
+                  className="bg-gray-100"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+
           <FormItem>
             <FormLabel>Empresa*</FormLabel>
-            <Select 
+            <Select
               onValueChange={(value) => form.setValue("Empresa", [value])}
               defaultValue={initialData?.fields.Empresa?.[0]}
             >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger
+                  className={
+                    form.formState.errors.Empresa ? "border-red-500" : ""
+                  }
+                >
                   <SelectValue placeholder="Seleccionar empresa" />
                 </SelectTrigger>
               </FormControl>
@@ -196,14 +241,24 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormItem>
             <FormLabel>Sede*</FormLabel>
-            <Select 
+            <Select
               onValueChange={(value) => form.setValue("Sede", [value])}
               defaultValue={initialData?.fields.Sede?.[0]}
               disabled={!selectedEmpresaId}
             >
               <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder={selectedEmpresaId ? "Seleccionar sede" : "Primero selecciona empresa"} />
+                <SelectTrigger
+                  className={
+                    form.formState.errors.Sede ? "border-red-500" : ""
+                  }
+                >
+                  <SelectValue
+                    placeholder={
+                      selectedEmpresaId
+                        ? "Seleccionar sede"
+                        : "Primero selecciona empresa"
+                    }
+                  />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -218,7 +273,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormItem>
             <FormLabel>Sector</FormLabel>
-            <Select 
+            <Select
               onValueChange={(value) => form.setValue("Sector", [value])}
               defaultValue={initialData?.fields.Sector?.[0]}
               disabled
@@ -250,6 +305,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
 
 
