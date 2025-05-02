@@ -31,7 +31,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface ContactFormProps {
   initialData?: AirtableRecord<ContactRecord>;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ContactRecord) => void;
   isLoading: boolean;
 }
 
@@ -69,7 +69,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     location.fields.Empresa?.includes(selectedEmpresaId)
   );
 
-  // Autocompletar WebEmpresa + Sector al seleccionar Empresa
+  // Autocompletar WebEmpresa y Sector al seleccionar Empresa
   useEffect(() => {
     if (!selectedEmpresaId) return;
 
@@ -79,8 +79,11 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
     form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
 
+    // Si la empresa tiene sector asignado → autocompletar
     if (selectedCompany?.fields.Sector?.[0]) {
       form.setValue("Sector", [selectedCompany.fields.Sector[0]]);
+    } else {
+      form.setValue("Sector", []);
     }
   }, [selectedEmpresaId, companies, form]);
 
@@ -112,7 +115,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       sanitizedData.TarjetaEscaneada = [imagePreview];
     }
 
-    // Validación manual
+    // Validación manual de obligatorios
     const requiredFields = ["Nombre", "Apellidos", "Email", "Empresa", "Sede"];
     let hasErrors = false;
 
@@ -131,17 +134,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
     if (hasErrors) return;
 
-    // Garantizar arrays vacíos en relaciones
-    ["Empresa", "Sede", "Sector"].forEach((field) => {
-      if (!sanitizedData[field]) sanitizedData[field] = [];
-    });
-
-    // Enviar ID en edición
-    if (initialData?.id) {
-      onSubmit({ id: initialData.id, fields: sanitizedData });
-    } else {
-      onSubmit(sanitizedData);
-    }
+    onSubmit(sanitizedData);
   };
 
   return (
@@ -185,7 +178,11 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
                     {label}
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder={label} {...field} className={form.formState.errors[name as keyof ContactRecord] ? "border-red-500 placeholder-red-500" : ""} />
+                    <Input
+                      placeholder={label}
+                      {...field}
+                      className={form.formState.errors[name as keyof ContactRecord] ? "border-red-500 placeholder-red-500" : ""}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -239,10 +236,10 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormItem>
             <FormLabel>Sector</FormLabel>
-            <Select disabled value={form.watch("Sector")?.[0] || ""} onValueChange={() => {}}>
+            <Select disabled value={form.watch("Sector")?.[0] || ""}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Asignado automáticamente" />
+                  <SelectValue placeholder="Asignado por la Empresa" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -267,13 +264,3 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
-
-
-
-
-
-
-
-
-
-
