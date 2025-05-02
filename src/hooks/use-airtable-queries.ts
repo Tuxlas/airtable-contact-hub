@@ -16,15 +16,17 @@ export const TABLES = {
   SECTORS: "Sectores",
 } as const;
 
-// ---------------------------
-// HELPERS → Mutations Factory
-// ---------------------------
+// --------------------------------------
+// Generic helpers for create/update/delete
+// --------------------------------------
 
 function useCreateRecord<T>(tableName: keyof typeof TABLES) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: T) => airtableService.createRecord(tableName, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [tableName] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [tableName] });
+    },
   });
 }
 
@@ -43,7 +45,9 @@ function useDeleteRecord(tableName: keyof typeof TABLES) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => airtableService.deleteRecord(tableName, id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [tableName] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [tableName] });
+    },
   });
 }
 
@@ -60,7 +64,8 @@ export const useContacts = () =>
 export const useContact = (id: string) =>
   useQuery({
     queryKey: [TABLES.CONTACTS, id],
-    queryFn: () => id ? airtableService.fetchRecord<ContactRecord>(TABLES.CONTACTS, id) : Promise.resolve(null),
+    queryFn: () =>
+      id ? airtableService.fetchRecord<ContactRecord>(TABLES.CONTACTS, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -81,7 +86,8 @@ export const useCompanies = () =>
 export const useCompany = (id: string) =>
   useQuery({
     queryKey: [TABLES.COMPANIES, id],
-    queryFn: () => id ? airtableService.fetchRecord<CompanyRecord>(TABLES.COMPANIES, id) : Promise.resolve(null),
+    queryFn: () =>
+      id ? airtableService.fetchRecord<CompanyRecord>(TABLES.COMPANIES, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -102,7 +108,8 @@ export const useLocations = () =>
 export const useLocation = (id: string) =>
   useQuery({
     queryKey: [TABLES.LOCATIONS, id],
-    queryFn: () => id ? airtableService.fetchRecord<SedeRecord>(TABLES.LOCATIONS, id) : Promise.resolve(null),
+    queryFn: () =>
+      id ? airtableService.fetchRecord<SedeRecord>(TABLES.LOCATIONS, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -123,7 +130,8 @@ export const useSectors = () =>
 export const useSector = (id: string) =>
   useQuery({
     queryKey: [TABLES.SECTORS, id],
-    queryFn: () => id ? airtableService.fetchRecord<SectorRecord>(TABLES.SECTORS, id) : Promise.resolve(null),
+    queryFn: () =>
+      id ? airtableService.fetchRecord<SectorRecord>(TABLES.SECTORS, id) : Promise.resolve(null),
     enabled: !!id,
   });
 
@@ -132,7 +140,7 @@ export const useUpdateSector = (id: string) => useUpdateRecord<SectorRecord>(TAB
 export const useDeleteSector = () => useDeleteRecord(TABLES.SECTORS);
 
 // ---------------------------
-// DASHBOARD
+// DASHBOARD → Utilidad resumen
 // ---------------------------
 
 export const useDashboardData = () => {
@@ -141,8 +149,17 @@ export const useDashboardData = () => {
   const locations = useLocations();
   const sectors = useSectors();
 
-  const isLoading = contacts.isLoading || companies.isLoading || locations.isLoading || sectors.isLoading;
-  const isError = contacts.isError || companies.isError || locations.isError || sectors.isError;
+  const isLoading =
+    contacts.isLoading ||
+    companies.isLoading ||
+    locations.isLoading ||
+    sectors.isLoading;
+
+  const isError =
+    contacts.isError ||
+    companies.isError ||
+    locations.isError ||
+    sectors.isError;
 
   const data = {
     totalContacts: contacts.data?.length || 0,
@@ -160,7 +177,7 @@ export const useDashboardData = () => {
 };
 
 // ---------------------------
-// UTILITY
+// GET BY ID helper
 // ---------------------------
 
 export function useGetRecordById<T>(
@@ -169,3 +186,4 @@ export function useGetRecordById<T>(
 ): T | undefined {
   return records?.find((r) => r.id === id)?.fields;
 }
+
