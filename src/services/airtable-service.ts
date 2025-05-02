@@ -1,11 +1,9 @@
 import { toast } from "@/hooks/use-toast";
 
-// Variables de entorno
 const AIRTABLE_ACCESS_TOKEN = import.meta.env.VITE_AIRTABLE_ACCESS_TOKEN!;
 const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID!;
 const AIRTABLE_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
 
-// Tipos de registros
 export type AirtableRecord<T> = {
   id: string;
   fields: T;
@@ -59,7 +57,6 @@ export type SectorRecord = {
   Contactos?: string[];
 };
 
-// Campos válidos para cada tabla
 const RECORD_FIELDS = {
   Contactos: [
     "Nombre", "Apellidos", "Cargo", "Email", "Telefono",
@@ -78,7 +75,6 @@ const RECORD_FIELDS = {
   ]
 };
 
-// Sanitizar registros antes de enviar
 export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
@@ -87,22 +83,25 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
     if (data[field] !== undefined) {
       let value = data[field];
 
-      // NO ENVIAR arrays vacíos ni strings vacíos
-      if (
-        (Array.isArray(value) && value.length === 0) ||
-        (typeof value === "string" && value.trim() === "")
-      ) {
-        return;
-      }
-
-      // Si es array con objetos con id → dejar solo los ids
+      // Arrays → limpiar nulos/vacíos
       if (Array.isArray(value)) {
+        value = value.filter((item) => item !== undefined && item !== null);
+
+        if (value.length === 0) {
+          return; // NO ENVIAR arrays vacíos
+        }
+
         value = value.map((item) => {
           if (typeof item === "object" && item?.id) {
             return item.id;
           }
           return item;
         });
+      }
+
+      // No enviar valores vacíos/null
+      if (value === undefined || value === null || value === "") {
+        return;
       }
 
       sanitized[field] = value;
@@ -112,7 +111,6 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
   return sanitized;
 };
 
-// Servicio de Airtable CRUD
 export const airtableService = {
   async fetchRecords<T>(tableName: keyof typeof RECORD_FIELDS): Promise<AirtableRecord<T>[]> {
     try {
