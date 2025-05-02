@@ -78,13 +78,16 @@ const RECORD_FIELDS = {
   ]
 };
 
+// Campos que nunca deben enviarse (Lookups, Fórmulas, Automáticos)
+const IGNORED_FIELDS = ["WebEmpresa", "SectorName"];
+
 // Sanitizar registros antes de enviar
 export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
 
   allowedFields.forEach((field) => {
-    if (data[field] !== undefined) {
+    if (data[field] !== undefined && !IGNORED_FIELDS.includes(field)) {
       let value = data[field];
 
       // Si es un array, sanitizar posibles objetos con id
