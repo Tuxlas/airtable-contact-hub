@@ -78,43 +78,31 @@ const RECORD_FIELDS = {
   ]
 };
 
-// Campos obligatorios
-const REQUIRED_FIELDS: Record<keyof typeof RECORD_FIELDS, string[]> = {
-  Contactos: ["Nombre", "Apellidos", "Email", "Empresa", "Sede"],
-  Empresas: ["NombreEmpresa"],
-  Sedes: ["Ciudad", "Empresa"],
-  Sectores: ["NombreSector"]
-};
-
 // Sanitizar registros antes de enviar
 export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
-  const requiredFields = REQUIRED_FIELDS[tableName];
   const sanitized: any = {};
 
   allowedFields.forEach((field) => {
-    const value = data[field];
+    let value = data[field];
 
-    const isRequired = requiredFields.includes(field);
+    // Saltar valores undefined o null
+    if (value === undefined || value === null) return;
 
-    // Opcionales → no enviar si están vacíos
-    if (!isRequired) {
-      if (value === undefined || value === null) return;
-      if (typeof value === "string" && value.trim() === "") return;
-      if (Array.isArray(value) && value.length === 0) return;
-    }
+    // Si es un array vacío → no enviar
+    if (Array.isArray(value) && value.length === 0) return;
 
-    // Sanitizar array de objetos (ejemplo relaciones Empresa, Sede)
+    // Si es un objeto con id → solo enviar el id
     if (Array.isArray(value)) {
-      sanitized[field] = value.map((item) => {
+      value = value.map((item) => {
         if (typeof item === "object" && item?.id) {
           return item.id;
         }
         return item;
       });
-    } else {
-      sanitized[field] = value;
     }
+
+    sanitized[field] = value;
   });
 
   return sanitized;
@@ -130,6 +118,7 @@ export const airtableService = {
           "Content-Type": "application/json",
         },
       });
+
       if (!response.ok) throw new Error("Error fetching records");
       const data = await response.json();
       return data.records;
@@ -151,6 +140,7 @@ export const airtableService = {
           "Content-Type": "application/json",
         },
       });
+
       if (!response.ok) throw new Error("Error fetching record");
       const data = await response.json();
       return data;
@@ -167,6 +157,7 @@ export const airtableService = {
   async createRecord<T>(tableName: keyof typeof RECORD_FIELDS, fields: T): Promise<AirtableRecord<T> | null> {
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
+
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
@@ -175,6 +166,7 @@ export const airtableService = {
         },
         body: JSON.stringify({ fields: sanitizedFields }),
       });
+
       if (!response.ok) throw new Error("Error creating record");
       const data = await response.json();
       toast({ title: "Éxito", description: `Registro creado en ${tableName}` });
@@ -190,8 +182,19 @@ export const airtableService = {
   },
 
   async updateRecord<T>(tableName: keyof typeof RECORD_FIELDS, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
+    if (!recordId) {
+      console.error("No ID provided for update");
+      toast({
+        title: "Error",
+        description: `No se pudo actualizar el registro en ${tableName}: ID no válido`,
+        variant: "destructive",
+      });
+      return null;
+    }
+
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
+
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
@@ -200,6 +203,7 @@ export const airtableService = {
         },
         body: JSON.stringify({ fields: sanitizedFields }),
       });
+
       if (!response.ok) throw new Error("Error updating record");
       const data = await response.json();
       toast({ title: "Éxito", description: `Registro actualizado en ${tableName}` });
@@ -223,6 +227,7 @@ export const airtableService = {
           "Content-Type": "application/json",
         },
       });
+
       if (!response.ok) throw new Error("Error deleting record");
       toast({ title: "Éxito", description: `Registro eliminado de ${tableName}` });
       return true;
@@ -236,3 +241,4 @@ export const airtableService = {
     }
   },
 };
+
