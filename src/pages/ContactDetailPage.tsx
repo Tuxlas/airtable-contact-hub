@@ -47,8 +47,17 @@ const ContactDetailPage = () => {
     try {
       await updateContact.mutateAsync(sanitizedData);
       setIsEditing(false);
+      toast({
+        title: "Contacto actualizado",
+        description: "Los datos del contacto fueron guardados correctamente",
+      });
     } catch (error) {
       console.error("Error updating contact:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el contacto",
+        variant: "destructive",
+      });
     }
   };
 
@@ -58,7 +67,7 @@ const ContactDetailPage = () => {
       await deleteContact.mutateAsync(id);
       toast({
         title: "Contacto eliminado",
-        description: "El contacto ha sido eliminado correctamente",
+        description: "El contacto fue eliminado correctamente",
       });
       navigate("/contacts");
     } catch (error) {
@@ -78,6 +87,53 @@ const ContactDetailPage = () => {
     ? sectors?.find((s) => s.id === contact.fields.Sector?.[0])?.fields.NombreSector
     : undefined;
 
+  const nombreCompleto = contact?.fields.Apellidos
+    ? `${contact?.fields.Nombre || ""} ${contact?.fields.Apellidos}`
+    : contact?.fields.Nombre || "";
+
+  const handleCall = () => {
+    if (contact?.fields.Telefono) {
+      window.location.href = `tel:${contact.fields.Telefono}`;
+    }
+  };
+
+  const handleEmail = () => {
+    if (contact?.fields.Email) {
+      window.location.href = `mailto:${contact.fields.Email}`;
+    }
+  };
+
+  const handleWhatsApp = () => {
+    if (contact?.fields.Telefono) {
+      const phone = contact.fields.Telefono.toString().replace(/\D/g, "");
+      window.open(`https://wa.me/${phone}`, "_blank");
+    }
+  };
+
+  const handleAddToContacts = () => {
+    if (!contact) return;
+
+    const vCardData = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      `FN:${nombreCompleto}`,
+      `TITLE:${contact.fields.Cargo || ""}`,
+      `TEL:${contact.fields.Telefono || ""}`,
+      `EMAIL:${contact.fields.Email || ""}`,
+      `ORG:${companyName || ""}`,
+      `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
+      `URL:${contact.fields.WebEmpresa || ""}`,
+      "END:VCARD"
+    ].join("\n");
+
+    const blob = new Blob([vCardData], { type: "text/vcard" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `${nombreCompleto || "contacto"}.vcf`;
+    link.href = url;
+    link.click();
+  };
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -85,8 +141,6 @@ const ContactDetailPage = () => {
           <Skeleton className="h-8 w-3/4" />
           <Skeleton className="h-6 w-1/2" />
           <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
         </div>
       </MainLayout>
     );
@@ -105,13 +159,9 @@ const ContactDetailPage = () => {
     );
   }
 
-  const nombreCompleto = contact.fields.Apellidos
-    ? `${contact.fields.Nombre || ""} ${contact.fields.Apellidos}`
-    : contact.fields.Nombre || "";
-
   return (
     <MainLayout>
-      <div className="flex justify-between mb-4">
+      <div className="flex justify-between mb-6">
         <Link to="/contacts" className="text-primary">← Volver</Link>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
@@ -128,7 +178,9 @@ const ContactDetailPage = () => {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Eliminar contacto?</AlertDialogTitle>
-                <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer.
+                </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -143,30 +195,36 @@ const ContactDetailPage = () => {
         <ContactForm initialData={contact} onSubmit={handleSubmit} isLoading={updateContact.isPending} />
       ) : (
         <div className="space-y-6">
-          <div className="mb-6 flex items-center">
-            {contact.fields.TarjetaEscaneada?.length ? (
-              <div className="w-20 h-20 rounded-full overflow-hidden mr-4">
-                <img src={contact.fields.TarjetaEscaneada[0]} alt={nombreCompleto} className="w-full h-full object-cover" />
-              </div>
+          <div className="flex items-center mb-6">
+            {contact.fields.TarjetaEscaneada?.[0] ? (
+              <img src={contact.fields.TarjetaEscaneada[0]} alt={nombreCompleto} className="w-20 h-20 rounded-full object-cover mr-4" />
             ) : (
               <div className="w-20 h-20 rounded-full bg-primary/10 mr-4 flex items-center justify-center">
                 <UserRound className="h-10 w-10 text-primary" />
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-medium text-text-title mb-1">{nombreCompleto || "Sin nombre"}</h1>
-              <p className="text-text-body">{contact.fields.Cargo || "Sin cargo"}</p>
+              <h1 className="text-2xl font-medium">{nombreCompleto}</h1>
+              <p className="text-gray-500">{contact.fields.Cargo || "Sin cargo"}</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            {contact.fields.Email && <div className="flex items-center"><Mail size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Email}</span></div>}
-            {contact.fields.Telefono && <div className="flex items-center"><Phone size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Telefono}</span></div>}
-            {companyName && <div className="flex items-center"><Building size={18} className="mr-3 text-gray-500" /><span>{companyName}</span></div>}
-            {(locationName || sectorName) && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{locationName || ""} {locationName && sectorName ? " - " : ""}{sectorName || ""}</span></div>}
-            {contact.fields.Direccion && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Direccion}{contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}{contact.fields.Pais && `, ${contact.fields.Pais}`}</span></div>}
-            {contact.fields.WebEmpresa && <div className="flex items-center"><Globe size={18} className="mr-3 text-gray-500" /><a href={contact.fields.WebEmpresa[0]} target="_blank" rel="noopener noreferrer" className="text-primary underline">{contact.fields.WebEmpresa[0]} (Empresa)</a></div>}
-            {contact.fields.Fuente && <div className="flex items-start"><div className="mt-1"><Calendar size={18} className="mr-3 text-gray-500" /></div><div><p className="text-sm text-gray-500 mb-1">Fuente</p><p>{contact.fields.Fuente}</p></div></div>}
+            {contact.fields.Email && <p><Mail size={18} className="inline mr-2" /> {contact.fields.Email}</p>}
+            {contact.fields.Telefono && <p><Phone size={18} className="inline mr-2" /> {contact.fields.Telefono}</p>}
+            {companyName && <p><Building size={18} className="inline mr-2" /> {companyName}</p>}
+            {locationName && <p><MapPin size={18} className="inline mr-2" /> {locationName}</p>}
+            {sectorName && <p><MapPin size={18} className="inline mr-2" /> {sectorName}</p>}
+            {contact.fields.Direccion && <p><MapPin size={18} className="inline mr-2" /> {contact.fields.Direccion}</p>}
+            {contact.fields.WebEmpresa && <p><Globe size={18} className="inline mr-2" /> <a href={contact.fields.WebEmpresa} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa}</a></p>}
+            {contact.fields.Fuente && <p><Calendar size={18} className="inline mr-2" /> {contact.fields.Fuente}</p>}
+          </div>
+
+          <div className="mt-8 space-x-2">
+            <Button onClick={handleCall} disabled={!contact.fields.Telefono}><Phone size={16} className="mr-2" /> Llamar</Button>
+            <Button onClick={handleEmail} disabled={!contact.fields.Email}><Mail size={16} className="mr-2" /> Email</Button>
+            <Button onClick={handleWhatsApp} disabled={!contact.fields.Telefono}>WhatsApp</Button>
+            <Button onClick={handleAddToContacts}>Añadir</Button>
           </div>
         </div>
       )}
@@ -175,9 +233,3 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
-
-
-
-
-
-
