@@ -11,7 +11,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ContactForm from "@/components/contacts/ContactForm";
-import { Phone, Mail, Building, MapPin, Globe, Calendar, Trash2, Edit, UserRound } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  Building,
+  MapPin,
+  Globe,
+  Calendar,
+  Trash2,
+  Edit,
+  UserRound,
+} from "lucide-react";
 import { useState } from "react";
 import { ContactRecord } from "@/services/airtable-service";
 import {
@@ -37,13 +47,11 @@ const ContactDetailPage = () => {
 
   const { data: companies } = useCompanies();
   const { data: locations } = useLocations();
-  const { data: sectors } = useSectors();
 
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmit = async (data: ContactRecord) => {
     const sanitizedData = sanitizeRecord("Contactos", data);
-
     try {
       await updateContact.mutateAsync(sanitizedData);
       setIsEditing(false);
@@ -74,25 +82,19 @@ const ContactDetailPage = () => {
     ? locations?.find((l) => l.id === contact.fields.Sede?.[0])?.fields.Ciudad
     : undefined;
 
-  const sectorName = contact?.fields.Sector?.[0]
-    ? sectors?.find((s) => s.id === contact.fields.Sector?.[0])?.fields.NombreSector
-    : undefined;
+  const sectorName = contact?.fields.SectorName?.[0];
 
   const handleCall = () => {
-    if (contact?.fields.Telefono) {
-      window.location.href = `tel:${contact?.fields.Telefono}`;
-    }
+    if (contact?.fields.Telefono) window.location.href = `tel:${contact.fields.Telefono}`;
   };
 
   const handleEmail = () => {
-    if (contact?.fields.Email) {
-      window.location.href = `mailto:${contact?.fields.Email}`;
-    }
+    if (contact?.fields.Email) window.location.href = `mailto:${contact.fields.Email}`;
   };
 
   const handleWhatsApp = () => {
     if (contact?.fields.Telefono) {
-      const phone = contact?.fields.Telefono.replace(/\D/g, "");
+      const phone = contact?.fields.Telefono.toString().replace(/\D/g, "");
       window.open(`https://wa.me/${phone}`, "_blank");
     }
   };
@@ -110,7 +112,7 @@ const ContactDetailPage = () => {
       `ORG:${companyName || ""}`,
       `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
       `URL:${contact.fields.WebEmpresa || ""}`,
-      "END:VCARD"
+      "END:VCARD",
     ].join("\n");
 
     const blob = new Blob([vCardData], { type: "text/vcard" });
@@ -125,11 +127,9 @@ const ContactDetailPage = () => {
     return (
       <MainLayout>
         <div className="space-y-4">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-6 w-1/2" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-8 w-3/4" />
+          ))}
         </div>
       </MainLayout>
     );
@@ -164,16 +164,13 @@ const ContactDetailPage = () => {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm">
-                <Trash2 size={16} className="mr-1" />
-                Eliminar
+                <Trash2 size={16} className="mr-1" />Eliminar
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Eliminar contacto?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acción no se puede deshacer.
-                </AlertDialogDescription>
+                <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -189,7 +186,7 @@ const ContactDetailPage = () => {
       ) : (
         <div className="space-y-6">
           <div className="mb-6 flex items-center">
-            {contact.fields.TarjetaEscaneada && contact.fields.TarjetaEscaneada.length > 0 ? (
+            {contact.fields.TarjetaEscaneada?.[0] ? (
               <div className="w-20 h-20 rounded-full overflow-hidden mr-4">
                 <img src={contact.fields.TarjetaEscaneada[0]} alt={nombreCompleto} className="w-full h-full object-cover" />
               </div>
@@ -199,37 +196,26 @@ const ContactDetailPage = () => {
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-medium text-text-title mb-1">{nombreCompleto || "Sin nombre"}</h1>
+              <h1 className="text-2xl font-medium text-text-title mb-1">{nombreCompleto}</h1>
               <p className="text-text-body">{contact.fields.Cargo || "Sin cargo"}</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            {contact.fields.Email && <div className="flex items-center"><Mail size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Email}</span></div>}
-            {contact.fields.Telefono && <div className="flex items-center"><Phone size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Telefono}</span></div>}
-            {companyName && <div className="flex items-center"><Building size={18} className="mr-3 text-gray-500" /><span>{companyName}</span></div>}
-            {(locationName || sectorName) && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{locationName || ""} {locationName && sectorName ? " - " : ""}{sectorName || ""}</span></div>}
-            {contact.fields.Direccion && <div className="flex items-center"><MapPin size={18} className="mr-3 text-gray-500" /><span>{contact.fields.Direccion}{contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}{contact.fields.Pais && `, ${contact.fields.Pais}`}</span></div>}
-            {contact.fields.WebEmpresa && <div className="flex items-center"><Globe size={18} className="mr-3 text-gray-500" /><a href={contact.fields.WebEmpresa.startsWith("http") ? contact.fields.WebEmpresa : `https://${contact.fields.WebEmpresa}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{contact.fields.WebEmpresa} (Empresa)</a></div>}
-            {contact.fields.Fuente && <div className="flex items-start"><div className="mt-1"><Calendar size={18} className="mr-3 text-gray-500" /></div><div><p className="text-sm text-gray-500 mb-1">Fuente</p><p>{contact.fields.Fuente}</p></div></div>}
+            {contact.fields.Email && <div className="flex items-center"><Mail size={18} className="mr-3" /><span>{contact.fields.Email}</span></div>}
+            {contact.fields.Telefono && <div className="flex items-center"><Phone size={18} className="mr-3" /><span>{contact.fields.Telefono}</span></div>}
+            {companyName && <div className="flex items-center"><Building size={18} className="mr-3" /><span>{companyName}</span></div>}
+            {(locationName || sectorName) && <div className="flex items-center"><MapPin size={18} className="mr-3" /><span>{locationName || ""}{locationName && sectorName ? " - " : ""}{sectorName || ""}</span></div>}
+            {contact.fields.Direccion && <div className="flex items-center"><MapPin size={18} className="mr-3" /><span>{contact.fields.Direccion}{contact.fields.Ciudad && `, ${contact.fields.Ciudad}`}{contact.fields.Pais && `, ${contact.fields.Pais}`}</span></div>}
+            {contact.fields.WebEmpresa && <div className="flex items-center"><Globe size={18} className="mr-3" /><a href={contact.fields.WebEmpresa.startsWith("http") ? contact.fields.WebEmpresa : `https://${contact.fields.WebEmpresa}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{contact.fields.WebEmpresa} (Empresa)</a></div>}
+            {contact.fields.Fuente && <div className="flex items-start"><Calendar size={18} className="mr-3" /><span>{contact.fields.Fuente}</span></div>}
           </div>
 
           <div className="mt-8">
             <h2 className="text-lg font-medium mb-3">Acciones</h2>
-            <div className="flex flex-row gap-2">
-              <Button onClick={handleCall} disabled={!contact.fields.Telefono} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><Phone size={16} className="mr-1" /><span>Llamar</span></Button>
-              <Button onClick={handleEmail} disabled={!contact.fields.Email} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><Mail size={16} className="mr-1" /><span>Email</span></Button>
-              <Button onClick={handleWhatsApp} disabled={!contact.fields.Telefono} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><span>WhatsApp</span></Button>
-              <Button onClick={handleAddToContacts} variant="default" size="sm" className="bg-primary/90 hover:bg-primary flex flex-row items-center"><span>Añadir</span></Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </MainLayout>
-  );
-};
+            <div className="flex gap-2">
+              <Button onClick={handleCall} disabled={!contact
 
-export default ContactDetailPage;
 
 
 
