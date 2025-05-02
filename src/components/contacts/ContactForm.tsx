@@ -64,12 +64,11 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   });
 
   const selectedEmpresaId = form.watch("Empresa")?.[0] || "";
-
   const filteredLocations = locations?.filter((location) =>
     location.fields.Empresa?.includes(selectedEmpresaId)
   );
 
-  // Autocompletar WebEmpresa y Sector al seleccionar Empresa
+  // Autocompletar WebEmpresa al seleccionar Empresa
   useEffect(() => {
     if (!selectedEmpresaId) return;
 
@@ -79,9 +78,10 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
     form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
 
-    // Si la empresa tiene sector asignado → autocompletar
-    if (selectedCompany?.fields.Sector?.[0]) {
-      form.setValue("Sector", [selectedCompany.fields.Sector[0]]);
+    // Autocompletar Sector
+    const sectorId = selectedCompany?.fields.Sector?.[0] || "";
+    if (sectorId) {
+      form.setValue("Sector", [sectorId]);
     } else {
       form.setValue("Sector", []);
     }
@@ -115,7 +115,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       sanitizedData.TarjetaEscaneada = [imagePreview];
     }
 
-    // Validación manual de obligatorios
+    // Validación manual de campos obligatorios
     const requiredFields = ["Nombre", "Apellidos", "Email", "Empresa", "Sede"];
     let hasErrors = false;
 
@@ -235,8 +235,8 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
           </FormItem>
 
           <FormItem>
-            <FormLabel>Sector</FormLabel>
-            <Select disabled value={form.watch("Sector")?.[0] || ""}>
+            <FormLabel>Sector (Asignado)</FormLabel>
+            <Select disabled value={form.watch("Sector")?.[0] || ""} onValueChange={() => {}}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Asignado por la Empresa" />
@@ -264,3 +264,4 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
