@@ -72,11 +72,9 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   // Autocompletar WebEmpresa al seleccionar Empresa
   useEffect(() => {
     if (!selectedEmpresaId) return;
-
     const selectedCompany = companies?.find(
       (company) => company.id === selectedEmpresaId
     );
-
     form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
   }, [selectedEmpresaId, companies, form]);
 
@@ -132,35 +130,19 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-6 mb-8"
-      >
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 mb-8">
         <div className="flex justify-center mb-6">
           <div className="relative">
             <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
               {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="Tarjeta escaneada"
-                  className="w-full h-full object-cover"
-                />
+                <img src={imagePreview} alt="Tarjeta escaneada" className="w-full h-full object-cover" />
               ) : (
                 <Camera size={32} className="text-gray-400" />
               )}
             </div>
-            <label
-              htmlFor="image-upload"
-              className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full cursor-pointer"
-            >
+            <label htmlFor="image-upload" className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full cursor-pointer">
               <Camera size={16} />
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
+              <input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
             </label>
           </div>
         </div>
@@ -203,23 +185,14 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             <FormItem>
               <FormLabel>Web de la Empresa</FormLabel>
               <FormControl>
-                <Input
-                  value={form.watch("WebEmpresa")}
-                  disabled
-                  className="bg-gray-100"
-                />
+                <Input value={form.watch("WebEmpresa")} disabled className="bg-gray-100" />
               </FormControl>
             </FormItem>
           )}
 
           <FormItem>
-            <FormLabel className={form.formState.errors.Empresa ? "text-red-500" : ""}>
-              Empresa*
-            </FormLabel>
-            <Select
-              onValueChange={(value) => form.setValue("Empresa", [value])}
-              defaultValue={initialData?.fields.Empresa?.[0]}
-            >
+            <FormLabel className={form.formState.errors.Empresa ? "text-red-500" : ""}>Empresa*</FormLabel>
+            <Select onValueChange={(value) => form.setValue("Empresa", [value])} defaultValue={initialData?.fields.Empresa?.[0]}>
               <FormControl>
                 <SelectTrigger className={form.formState.errors.Empresa ? "border-red-500" : ""}>
                   <SelectValue placeholder="Seleccionar empresa" />
@@ -236,14 +209,8 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
           </FormItem>
 
           <FormItem>
-            <FormLabel className={form.formState.errors.Sede ? "text-red-500" : ""}>
-              Sede*
-            </FormLabel>
-            <Select
-              onValueChange={(value) => form.setValue("Sede", [value])}
-              defaultValue={initialData?.fields.Sede?.[0]}
-              disabled={!selectedEmpresaId}
-            >
+            <FormLabel className={form.formState.errors.Sede ? "text-red-500" : ""}>Sede*</FormLabel>
+            <Select onValueChange={(value) => form.setValue("Sede", [value])} defaultValue={initialData?.fields.Sede?.[0]} disabled={!selectedEmpresaId}>
               <FormControl>
                 <SelectTrigger className={form.formState.errors.Sede ? "border-red-500" : ""}>
                   <SelectValue placeholder={selectedEmpresaId ? "Seleccionar sede" : "Primero selecciona empresa"} />
@@ -261,11 +228,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
           <FormItem>
             <FormLabel>Sector</FormLabel>
-            <Select
-              onValueChange={(value) => form.setValue("Sector", [value])}
-              defaultValue={initialData?.fields.Sector?.[0]}
-              disabled
-            >
+            <Select onValueChange={(value) => form.setValue("Sector", [value])} defaultValue={initialData?.fields.Sector?.[0]} disabled>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Asignado por la Empresa" />
@@ -293,6 +256,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
 
 
