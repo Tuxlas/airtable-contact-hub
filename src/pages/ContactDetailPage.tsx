@@ -42,7 +42,6 @@ import { sanitizeRecord } from "@/services/airtable-service";
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
   const { data: contact, isLoading } = useContact(id || "");
   const updateContact = useUpdateContact(id || "");
   const deleteContact = useDeleteContact();
@@ -53,7 +52,7 @@ const ContactDetailPage = () => {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  // Redirigir si no existe el contacto
+  // Si no hay contacto y no está cargando → redirigir
   useEffect(() => {
     if (!isLoading && !contact) {
       navigate("/contacts");
@@ -70,6 +69,7 @@ const ContactDetailPage = () => {
         description: "Los datos del contacto fueron guardados correctamente",
       });
     } catch (error) {
+      console.error("Error updating contact:", error);
       toast({
         title: "Error",
         description: "No se pudo actualizar el contacto",
@@ -88,11 +88,7 @@ const ContactDetailPage = () => {
       });
       navigate("/contacts");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar el contacto",
-        variant: "destructive",
-      });
+      console.error("Error deleting contact:", error);
     }
   };
 
@@ -167,9 +163,7 @@ const ContactDetailPage = () => {
     );
   }
 
-  if (!contact) {
-    return null; // Se maneja con redirect automático.
-  }
+  if (!contact) return null; // ya redirigido con useEffect si no existe
 
   return (
     <MainLayout>
@@ -249,6 +243,7 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
 
 
 
