@@ -82,11 +82,25 @@ const RECORD_FIELDS = {
 export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
+
   allowedFields.forEach((field) => {
     if (data[field] !== undefined) {
-      sanitized[field] = data[field];
+      let value = data[field];
+
+      // Si es un array, sanitizar posibles objetos con id
+      if (Array.isArray(value)) {
+        value = value.map((item) => {
+          if (typeof item === "object" && item?.id) {
+            return item.id; // Solo dejamos el id
+          }
+          return item;
+        });
+      }
+
+      sanitized[field] = value;
     }
   });
+
   return sanitized;
 };
 
@@ -206,6 +220,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
