@@ -72,16 +72,16 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
   // Autocompletar WebEmpresa y Sector al seleccionar Empresa
   useEffect(() => {
     if (!selectedEmpresaId) return;
+    const selectedCompany = companies?.find(
+      (company) => company.id === selectedEmpresaId
+    );
 
-    const selectedCompany = companies?.find((c) => c.id === selectedEmpresaId);
-
-    // Web de la empresa
     form.setValue("WebEmpresa", selectedCompany?.fields.WebEmpresa || "");
 
-    // Sector (solo si existe en Empresa)
-    const sectorId = selectedCompany?.fields.Sector?.[0];
-    if (sectorId) {
-      form.setValue("Sector", [sectorId]);
+    if (selectedCompany?.fields.Sector?.[0]) {
+      form.setValue("Sector", [selectedCompany.fields.Sector[0]]);
+    } else {
+      form.setValue("Sector", []);
     }
   }, [selectedEmpresaId, companies, form]);
 
@@ -106,6 +106,23 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     reader.readAsDataURL(file);
   };
 
+  // Limpiar datos vacíos antes de enviar
+  const cleanRecordBeforeSubmit = (data: ContactRecord): ContactRecord => {
+    const cleaned: any = {};
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          cleaned[key] = value;
+        }
+      } else if (value !== "" && value !== null && value !== undefined) {
+        cleaned[key] = value;
+      }
+    });
+
+    return cleaned;
+  };
+
   const handleSubmit = (data: ContactRecord) => {
     const sanitizedData = sanitizeRecord("Contactos", data);
 
@@ -113,6 +130,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
       sanitizedData.TarjetaEscaneada = [imagePreview];
     }
 
+    // Validación manual de obligatorios
     const requiredFields = ["Nombre", "Apellidos", "Email", "Empresa", "Sede"];
     let hasErrors = false;
 
@@ -131,7 +149,8 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
     if (hasErrors) return;
 
-    onSubmit(sanitizedData);
+    const cleanedData = cleanRecordBeforeSubmit(sanitizedData);
+    onSubmit(cleanedData);
   };
 
   return (
@@ -231,25 +250,23 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
             </Select>
           </FormItem>
 
-          {initialData && (
-            <FormItem>
-              <FormLabel>Sector</FormLabel>
-              <Select disabled defaultValue={form.watch("Sector")?.[0]}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Asignado por la Empresa" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {sectors?.map((sector) => (
-                    <SelectItem key={sector.id} value={sector.id}>
-                      {sector.fields.NombreSector || "Sin nombre"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormItem>
-          )}
+          <FormItem>
+            <FormLabel>Sector</FormLabel>
+            <Select value={form.watch("Sector")?.[0]} disabled>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Asignado por la Empresa" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {sectors?.map((sector) => (
+                  <SelectItem key={sector.id} value={sector.id}>
+                    {sector.fields.NombreSector || "Sin nombre"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormItem>
         </div>
 
         <div className="flex justify-end">
@@ -263,5 +280,6 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
 
