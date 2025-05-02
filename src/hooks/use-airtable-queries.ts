@@ -20,7 +20,7 @@ export const TABLES = {
 // HELPERS → Mutations Factory
 // ---------------------------
 
-function useCreateRecord<T>(tableName: keyof typeof TABLES) {
+function useCreateRecord<T>(tableName: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: T) => airtableService.createRecord<T>(tableName, data),
@@ -28,7 +28,7 @@ function useCreateRecord<T>(tableName: keyof typeof TABLES) {
   });
 }
 
-function useUpdateRecord<T>(tableName: keyof typeof TABLES, id: string) {
+function useUpdateRecord<T>(tableName: string, id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<T>) => airtableService.updateRecord<T>(tableName, id, data),
@@ -39,7 +39,7 @@ function useUpdateRecord<T>(tableName: keyof typeof TABLES, id: string) {
   });
 }
 
-function useDeleteRecord(tableName: keyof typeof TABLES) {
+function useDeleteRecord(tableName: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => airtableService.deleteRecord(tableName, id),
@@ -169,3 +169,4 @@ export function useGetRecordById<T>(
 ): T | undefined {
   return records?.find((r) => r.id === id)?.fields;
 }
+
