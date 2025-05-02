@@ -16,7 +16,17 @@ const CreateContactPage = () => {
 
       const result = await createContact.mutateAsync(sanitizedData);
       if (result?.id) {
+        toast({
+          title: "Contacto creado",
+          description: "El contacto se ha creado correctamente",
+        });
         navigate(`/contacts/${result.id}`);
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo crear el contacto. Inténtalo nuevamente.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error creating contact:", error);
@@ -35,10 +45,12 @@ const CreateContactPage = () => {
           ← Volver
         </Link>
       </div>
+
       <ContactForm onSubmit={handleSubmit} isLoading={createContact.isPending} />
     </MainLayout>
   );
 };
 
 export default CreateContactPage;
+
 
