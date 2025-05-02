@@ -11,7 +11,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ContactForm from "@/components/contacts/ContactForm";
-import { Phone, Mail, Building, MapPin, Globe, Calendar, Trash2, Edit, UserRound, Layers } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  Building,
+  MapPin,
+  Globe,
+  Calendar,
+  Trash2,
+  Edit,
+  UserRound,
+  Layers,
+} from "lucide-react";
 import { useState } from "react";
 import { ContactRecord } from "@/services/airtable-service";
 import {
@@ -122,7 +133,7 @@ const ContactDetailPage = () => {
       `ORG:${companyName || ""}`,
       `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
       `URL:${contact.fields.WebEmpresa || ""}`,
-      "END:VCARD"
+      "END:VCARD",
     ].join("\n");
 
     const blob = new Blob([vCardData], { type: "text/vcard" });
@@ -177,9 +188,7 @@ const ContactDetailPage = () => {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Eliminar contacto?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acción no se puede deshacer.
-                </AlertDialogDescription>
+                <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -209,14 +218,20 @@ const ContactDetailPage = () => {
           </div>
 
           <div className="space-y-4">
-            {contact.fields.Email && <p><Mail size={18} className="inline mr-2" /> {contact.fields.Email}</p>}
-            {contact.fields.Telefono && <p><Phone size={18} className="inline mr-2" /> {contact.fields.Telefono}</p>}
-            {companyName && <p><Building size={18} className="inline mr-2" /> {companyName}</p>}
-            {locationName && <p><MapPin size={18} className="inline mr-2" /> {locationName}</p>}
-            {sectorName && <p><Layers size={18} className="inline mr-2" /> {sectorName}</p>}
-            {contact.fields.Direccion && <p><MapPin size={18} className="inline mr-2" /> {contact.fields.Direccion}</p>}
-            {contact.fields.WebEmpresa && <p><Globe size={18} className="inline mr-2" /> <a href={contact.fields.WebEmpresa} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa}</a></p>}
-            {contact.fields.Fuente && <p><Calendar size={18} className="inline mr-2" /> {contact.fields.Fuente}</p>}
+            <p><Mail size={18} className="inline mr-2" /> {contact.fields.Email || "Sin email"}</p>
+            <p><Phone size={18} className="inline mr-2" /> {contact.fields.Telefono || "Sin teléfono"}</p>
+            <p><Building size={18} className="inline mr-2" /> {companyName || "Sin empresa"}</p>
+            <p><MapPin size={18} className="inline mr-2" /> {locationName || "Sin sede"}</p>
+            <p><Layers size={18} className="inline mr-2" /> {sectorName || "Sin sector"}</p>
+            <p><MapPin size={18} className="inline mr-2" /> {contact.fields.Direccion || "Sin dirección"}</p>
+            <p><Globe size={18} className="inline mr-2" />
+              {contact.fields.WebEmpresa ? (
+                <a href={contact.fields.WebEmpresa} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa}</a>
+              ) : (
+                "Sin web de empresa"
+              )}
+            </p>
+            <p><Calendar size={18} className="inline mr-2" /> {contact.fields.Fuente || "Sin fuente"}</p>
           </div>
 
           <div className="mt-8 space-x-2">
