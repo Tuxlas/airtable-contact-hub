@@ -1,11 +1,11 @@
 import { toast } from "@/hooks/use-toast";
 
-// 📌 VARIABLES DE ENTORNO
+// Variables de entorno
 const AIRTABLE_ACCESS_TOKEN = import.meta.env.VITE_AIRTABLE_ACCESS_TOKEN!;
 const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID!;
 const AIRTABLE_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`;
 
-// 📌 Tipos de Registros
+// Tipos de registros
 export type AirtableRecord<T> = {
   id: string;
   fields: T;
@@ -59,67 +59,38 @@ export type SectorRecord = {
   Contactos?: string[];
 };
 
-// ------------------------------
-// 🔧 SANITIZER PARA FILTRAR CAMPOS
-// ------------------------------
+// Campos válidos para cada tabla
 const RECORD_FIELDS = {
   Contactos: [
-    "Nombre",
-    "Apellidos",
-    "Cargo",
-    "Email",
-    "Telefono",
-    "Empresa",
-    "Sede",
-    "Sector",
-    "Direccion",
-    "Ciudad",
-    "Pais",
-    "Fuente",
-    "TarjetaEscaneada",
-    "FechaCreacion",
-    "WebEmpresa",
-    "SectorName",
+    "Nombre", "Apellidos", "Cargo", "Email", "Telefono",
+    "Empresa", "Sede", "Sector", "Direccion", "Ciudad", "Pais",
+    "Fuente", "TarjetaEscaneada", "FechaCreacion", "WebEmpresa", "SectorName"
   ],
   Empresas: [
-    "NombreEmpresa",
-    "Sector",
-    "WebEmpresa",
-    "Sedes",
-    "NumeroSedes",
-    "Tags",
-    "NumeroContactos",
-    "Contactos",
-    "FechaCreacion",
+    "NombreEmpresa", "Sector", "WebEmpresa", "Sedes", "NumeroSedes",
+    "Tags", "NumeroContactos", "Contactos", "FechaCreacion"
   ],
   Sedes: [
-    "Ciudad",
-    "Empresa",
-    "Pais",
-    "Direccion",
-    "TotalContactos",
-    "Contactos",
+    "Ciudad", "Empresa", "Pais", "Direccion", "TotalContactos", "Contactos"
   ],
-  Sectores: ["NombreSector", "Empresas", "NumeroEmpresas", "Contactos"],
+  Sectores: [
+    "NombreSector", "Empresas", "NumeroEmpresas", "Contactos"
+  ]
 };
 
+// Sanitizar registros antes de enviar
 export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any) => {
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
-
   allowedFields.forEach((field) => {
     if (data[field] !== undefined) {
       sanitized[field] = data[field];
     }
   });
-
   return sanitized;
 };
 
-// ------------------------------
-// 📦 SERVICIO AIRTABLE (CRUD TOTAL)
-// ------------------------------
-
+// Servicio de Airtable CRUD
 export const airtableService = {
   async fetchRecords<T>(tableName: keyof typeof RECORD_FIELDS): Promise<AirtableRecord<T>[]> {
     try {
@@ -129,9 +100,7 @@ export const airtableService = {
           "Content-Type": "application/json",
         },
       });
-
       if (!response.ok) throw new Error("Error fetching records");
-
       const data = await response.json();
       return data.records;
     } catch (error) {
@@ -152,9 +121,7 @@ export const airtableService = {
           "Content-Type": "application/json",
         },
       });
-
       if (!response.ok) throw new Error("Error fetching record");
-
       const data = await response.json();
       return data;
     } catch (error) {
@@ -170,7 +137,6 @@ export const airtableService = {
   async createRecord<T>(tableName: keyof typeof RECORD_FIELDS, fields: T): Promise<AirtableRecord<T> | null> {
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
-
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}`, {
         method: "POST",
         headers: {
@@ -179,14 +145,9 @@ export const airtableService = {
         },
         body: JSON.stringify({ fields: sanitizedFields }),
       });
-
       if (!response.ok) throw new Error("Error creating record");
-
       const data = await response.json();
-      toast({
-        title: "Éxito",
-        description: `Registro creado en ${tableName}`,
-      });
+      toast({ title: "Éxito", description: `Registro creado en ${tableName}` });
       return data;
     } catch (error) {
       toast({
@@ -201,7 +162,6 @@ export const airtableService = {
   async updateRecord<T>(tableName: keyof typeof RECORD_FIELDS, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
-
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "PATCH",
         headers: {
@@ -210,14 +170,9 @@ export const airtableService = {
         },
         body: JSON.stringify({ fields: sanitizedFields }),
       });
-
       if (!response.ok) throw new Error("Error updating record");
-
       const data = await response.json();
-      toast({
-        title: "Éxito",
-        description: `Registro actualizado en ${tableName}`,
-      });
+      toast({ title: "Éxito", description: `Registro actualizado en ${tableName}` });
       return data;
     } catch (error) {
       toast({
@@ -238,13 +193,8 @@ export const airtableService = {
           "Content-Type": "application/json",
         },
       });
-
       if (!response.ok) throw new Error("Error deleting record");
-
-      toast({
-        title: "Éxito",
-        description: `Registro eliminado en ${tableName}`,
-      });
+      toast({ title: "Éxito", description: `Registro eliminado de ${tableName}` });
       return true;
     } catch (error) {
       toast({
