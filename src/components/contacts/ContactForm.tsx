@@ -63,6 +63,12 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
     },
   });
 
+  const selectedEmpresaId = form.watch("Empresa")?.[0] || "";
+
+  const filteredLocations = locations?.filter((location) =>
+    location.fields.Empresa?.includes(selectedEmpresaId)
+  );
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -89,6 +95,19 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 
     if (imagePreview) {
       sanitizedData.TarjetaEscaneada = [imagePreview];
+    }
+
+    // Validación manual obligatorios
+    const requiredFields = ["Nombre", "Apellidos", "Email", "Empresa", "Sede"];
+    for (const field of requiredFields) {
+      if (!sanitizedData[field] || (Array.isArray(sanitizedData[field]) && sanitizedData[field].length === 0)) {
+        toast({
+          title: "Faltan datos",
+          description: `El campo ${field} es obligatorio.`,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     onSubmit(sanitizedData);
@@ -127,94 +146,97 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { name: "Nombre", label: "Nombre*", required: true },
-            { name: "Apellidos", label: "Apellidos*", required: true },
+          {[ 
+            { name: "Nombre", label: "Nombre*" },
+            { name: "Apellidos", label: "Apellidos*" },
             { name: "Cargo", label: "Cargo" },
-            { name: "Email", label: "Email*", required: true },
+            { name: "Email", label: "Email*" },
             { name: "Telefono", label: "Teléfono" },
             { name: "Direccion", label: "Dirección" },
             { name: "Ciudad", label: "Ciudad" },
             { name: "Pais", label: "País" },
             { name: "WebEmpresa", label: "Web de la Empresa" },
             { name: "Fuente", label: "Fuente" },
-          ].map(({ name, label, required }) => (
+          ].map(({ name, label }) => (
             <FormField
               key={name}
               control={form.control}
               name={name as keyof ContactRecord}
-              rules={required ? { required: `${label} es obligatorio` } : undefined}
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>{label}</FormLabel>
                   <FormControl>
                     <Input placeholder={label} {...field} />
                   </FormControl>
-                  {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
                 </FormItem>
               )}
             />
           ))}
 
-          {/* Empresa (Obligatorio) */}
-          <FormField
-            control={form.control}
-            name="Empresa"
-            rules={{ required: "Selecciona una empresa" }}
-            render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Empresa*</FormLabel>
-                <Select 
-                  onValueChange={(value) => form.setValue("Empresa", [value])}
-                  defaultValue={initialData?.fields.Empresa?.[0]}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar empresa" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {companies?.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.fields.NombreEmpresa || "Sin nombre"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
-              </FormItem>
-            )}
-          />
+          <FormItem>
+            <FormLabel>Empresa*</FormLabel>
+            <Select 
+              onValueChange={(value) => form.setValue("Empresa", [value])}
+              defaultValue={initialData?.fields.Empresa?.[0]}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar empresa" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {companies?.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.fields.NombreEmpresa || "Sin nombre"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormItem>
 
-          {/* Sede (Obligatorio) */}
-          <FormField
-            control={form.control}
-            name="Sede"
-            rules={{ required: "Selecciona una sede" }}
-            render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Sede*</FormLabel>
-                <Select 
-                  onValueChange={(value) => form.setValue("Sede", [value])}
-                  defaultValue={initialData?.fields.Sede?.[0]}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar sede" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {locations?.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.fields.Ciudad || "Sin nombre"}, {location.fields.Pais || ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
-              </FormItem>
-            )}
-          />
+          <FormItem>
+            <FormLabel>Sede*</FormLabel>
+            <Select 
+              onValueChange={(value) => form.setValue("Sede", [value])}
+              defaultValue={initialData?.fields.Sede?.[0]}
+              disabled={!selectedEmpresaId}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder={selectedEmpresaId ? "Seleccionar sede" : "Primero selecciona empresa"} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {filteredLocations?.map((location) => (
+                  <SelectItem key={location.id} value={location.id}>
+                    {location.fields.Ciudad}, {location.fields.Pais}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormItem>
+
+          <FormItem>
+            <FormLabel>Sector</FormLabel>
+            <Select 
+              onValueChange={(value) => form.setValue("Sector", [value])}
+              defaultValue={initialData?.fields.Sector?.[0]}
+              disabled
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Asignado por la Empresa" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {sectors?.map((sector) => (
+                  <SelectItem key={sector.id} value={sector.id}>
+                    {sector.fields.NombreSector || "Sin nombre"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormItem>
         </div>
 
         <div className="flex justify-end">
@@ -228,6 +250,8 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
+
 
 
 
