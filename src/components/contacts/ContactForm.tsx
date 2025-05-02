@@ -166,7 +166,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
+          {[ 
             { name: "Nombre", label: "Nombre*" },
             { name: "Apellidos", label: "Apellidos*" },
             { name: "Cargo", label: "Cargo" },
@@ -183,16 +183,14 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
               name={name as keyof ContactRecord}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{label}</FormLabel>
+                  <FormLabel className={form.formState.errors[name as keyof ContactRecord] ? "text-red-500" : ""}>
+                    {label}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder={label}
                       {...field}
-                      className={
-                        form.formState.errors[name as keyof ContactRecord]
-                          ? "border-red-500 placeholder-red-500"
-                          : ""
-                      }
+                      className={form.formState.errors[name as keyof ContactRecord] ? "border-red-500 placeholder-red-500" : ""}
                     />
                   </FormControl>
                 </FormItem>
@@ -215,17 +213,15 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
           )}
 
           <FormItem>
-            <FormLabel>Empresa*</FormLabel>
+            <FormLabel className={form.formState.errors.Empresa ? "text-red-500" : ""}>
+              Empresa*
+            </FormLabel>
             <Select
               onValueChange={(value) => form.setValue("Empresa", [value])}
               defaultValue={initialData?.fields.Empresa?.[0]}
             >
               <FormControl>
-                <SelectTrigger
-                  className={
-                    form.formState.errors.Empresa ? "border-red-500" : ""
-                  }
-                >
+                <SelectTrigger className={form.formState.errors.Empresa ? "border-red-500" : ""}>
                   <SelectValue placeholder="Seleccionar empresa" />
                 </SelectTrigger>
               </FormControl>
@@ -240,25 +236,17 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
           </FormItem>
 
           <FormItem>
-            <FormLabel>Sede*</FormLabel>
+            <FormLabel className={form.formState.errors.Sede ? "text-red-500" : ""}>
+              Sede*
+            </FormLabel>
             <Select
               onValueChange={(value) => form.setValue("Sede", [value])}
               defaultValue={initialData?.fields.Sede?.[0]}
               disabled={!selectedEmpresaId}
             >
               <FormControl>
-                <SelectTrigger
-                  className={
-                    form.formState.errors.Sede ? "border-red-500" : ""
-                  }
-                >
-                  <SelectValue
-                    placeholder={
-                      selectedEmpresaId
-                        ? "Seleccionar sede"
-                        : "Primero selecciona empresa"
-                    }
-                  />
+                <SelectTrigger className={form.formState.errors.Sede ? "border-red-500" : ""}>
+                  <SelectValue placeholder={selectedEmpresaId ? "Seleccionar sede" : "Primero selecciona empresa"} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -305,6 +293,7 @@ const ContactForm = ({ initialData, onSubmit, isLoading }: ContactFormProps) => 
 };
 
 export default ContactForm;
+
 
 
 
