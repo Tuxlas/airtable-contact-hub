@@ -20,15 +20,15 @@ export type ContactRecord = {
   Telefono?: number;
   Empresa?: string[];
   Sede?: string[];
-  Sector?: string[]; // Lookup, no se envía
+  Sector?: string[];
   Direccion?: string;
   Ciudad?: string;
   Pais?: string;
   Fuente?: string;
   TarjetaEscaneada?: any[];
   FechaCreacion?: string;
-  WebEmpresa?: string[]; // Lookup, no se envía
-  SectorName?: string[]; // Lookup, no se envía
+  WebEmpresa?: string[];
+  SectorName?: string[];
 };
 
 export type CompanyRecord = {
@@ -84,19 +84,35 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
   const sanitized: any = {};
 
   allowedFields.forEach((field) => {
-    let value = data[field];
+    if (data[field] !== undefined) {
+      let value = data[field];
 
-    // No incluir campos vacíos o no definidos
-    if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
-      return;
+      // Si es un array, sanitizar posibles objetos con id
+      if (Array.isArray(value)) {
+        value = value.map((item) =>
+          typeof item === "object" && item?.id ? item.id : item
+        );
+      }
+
+      sanitized[field] = value;
     }
+  });
 
-    // Si es un array con objetos {id}, convertir a array de ids
-    if (Array.isArray(value)) {
-      value = value.map((item) => (typeof item === "object" && item?.id) ? item.id : item);
+  // → Asegurar que los campos de relación (arrays) estén como [] si son undefined o null
+  ["Empresa", "Sede", "Sector", "TarjetaEscaneada"].forEach((field) => {
+    if (sanitized[field] === undefined || sanitized[field] === null) {
+      sanitized[field] = [];
     }
+  });
 
-    sanitized[field] = value;
+  // → Asegurar que los campos de texto estén como "" si son undefined o null
+  [
+    "Nombre", "Apellidos", "Cargo", "Email", "Direccion", "Ciudad",
+    "Pais", "Fuente", "WebEmpresa", "SectorName", "Telefono"
+  ].forEach((field) => {
+    if (sanitized[field] === undefined || sanitized[field] === null) {
+      sanitized[field] = "";
+    }
   });
 
   return sanitized;
@@ -218,6 +234,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
