@@ -23,7 +23,7 @@ import {
   UserRound,
   Layers,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ContactRecord } from "@/services/airtable-service";
 import {
   AlertDialog,
@@ -42,6 +42,7 @@ import { sanitizeRecord } from "@/services/airtable-service";
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const { data: contact, isLoading } = useContact(id || "");
   const updateContact = useUpdateContact(id || "");
   const deleteContact = useDeleteContact();
@@ -51,6 +52,13 @@ const ContactDetailPage = () => {
   const { data: sectors } = useSectors();
 
   const [isEditing, setIsEditing] = useState(false);
+
+  // Redirigir si no existe el contacto
+  useEffect(() => {
+    if (!isLoading && !contact) {
+      navigate("/contacts");
+    }
+  }, [isLoading, contact, navigate]);
 
   const handleSubmit = async (data: ContactRecord) => {
     const sanitizedData = sanitizeRecord("Contactos", data);
@@ -62,7 +70,6 @@ const ContactDetailPage = () => {
         description: "Los datos del contacto fueron guardados correctamente",
       });
     } catch (error) {
-      console.error("Error updating contact:", error);
       toast({
         title: "Error",
         description: "No se pudo actualizar el contacto",
@@ -81,7 +88,11 @@ const ContactDetailPage = () => {
       });
       navigate("/contacts");
     } catch (error) {
-      console.error("Error deleting contact:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el contacto",
+        variant: "destructive",
+      });
     }
   };
 
@@ -132,7 +143,7 @@ const ContactDetailPage = () => {
       `EMAIL:${contact.fields.Email || ""}`,
       `ORG:${companyName || ""}`,
       `ADR:;;${contact.fields.Direccion || ""};${contact.fields.Ciudad || ""};${contact.fields.Pais || ""}`,
-      `URL:${contact.fields.WebEmpresa?.[0] || ""}`,
+      `URL:${contact.fields.WebEmpresa || ""}`,
       "END:VCARD",
     ].join("\n");
 
@@ -157,16 +168,7 @@ const ContactDetailPage = () => {
   }
 
   if (!contact) {
-    return (
-      <MainLayout>
-        <div className="text-center py-8">
-          <h2 className="text-xl mb-4">Contacto no encontrado</h2>
-          <Link to="/contacts">
-            <Button>Volver a contactos</Button>
-          </Link>
-        </div>
-      </MainLayout>
-    );
+    return null; // Se maneja con redirect automático.
   }
 
   return (
@@ -225,8 +227,8 @@ const ContactDetailPage = () => {
             <p><Layers size={18} className="inline mr-2" /> {sectorName || "Sin sector"}</p>
             <p><MapPin size={18} className="inline mr-2" /> {contact.fields.Direccion || "Sin dirección"}</p>
             <p><Globe size={18} className="inline mr-2" />
-              {contact.fields.WebEmpresa?.[0] ? (
-                <a href={contact.fields.WebEmpresa?.[0]} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa?.[0]}</a>
+              {contact.fields.WebEmpresa ? (
+                <a href={contact.fields.WebEmpresa} target="_blank" rel="noopener noreferrer">{contact.fields.WebEmpresa}</a>
               ) : (
                 "Sin web de empresa"
               )}
@@ -247,5 +249,6 @@ const ContactDetailPage = () => {
 };
 
 export default ContactDetailPage;
+
 
 
