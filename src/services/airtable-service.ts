@@ -83,28 +83,17 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
   const allowedFields = RECORD_FIELDS[tableName];
   const sanitized: any = {};
 
-  // Campos vinculados que deben ser siempre arrays
-  const LINKED_FIELDS = ["Empresa", "Sede", "Sector", "WebEmpresa", "SectorName"];
-
   allowedFields.forEach((field) => {
-    if (data[field] !== undefined && data[field] !== null && data[field] !== "") {
+    if (data[field] !== undefined) {
       let value = data[field];
 
-      // Si es un array, sanitizar posibles objetos con id
       if (Array.isArray(value)) {
         value = value.map((item) => {
           if (typeof item === "object" && item?.id) {
-            return item.id; // Solo dejar ID
+            return item.id;
           }
           return item;
         });
-      }
-
-      // Forzar arrays en campos vinculados aunque venga como string
-      if (LINKED_FIELDS.includes(field)) {
-        if (!Array.isArray(value)) {
-          value = [value];
-        }
       }
 
       sanitized[field] = value;
@@ -114,7 +103,6 @@ export const sanitizeRecord = (tableName: keyof typeof RECORD_FIELDS, data: any)
   return sanitized;
 };
 
-// Servicio de Airtable CRUD
 export const airtableService = {
   async fetchRecords<T>(tableName: keyof typeof RECORD_FIELDS): Promise<AirtableRecord<T>[]> {
     try {
@@ -138,7 +126,10 @@ export const airtableService = {
   },
 
   async fetchRecord<T>(tableName: keyof typeof RECORD_FIELDS, recordId: string): Promise<AirtableRecord<T> | null> {
-    if (!recordId || typeof recordId !== "string") return null;
+    if (!tableName || !recordId) {
+      console.error("Invalid fetchRecord parameters:", tableName, recordId);
+      return null;
+    }
 
     try {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
@@ -186,6 +177,11 @@ export const airtableService = {
   },
 
   async updateRecord<T>(tableName: keyof typeof RECORD_FIELDS, recordId: string, fields: Partial<T>): Promise<AirtableRecord<T> | null> {
+    if (!tableName || !recordId) {
+      console.error("Invalid updateRecord parameters:", tableName, recordId);
+      return null;
+    }
+
     try {
       const sanitizedFields = sanitizeRecord(tableName, fields);
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
@@ -211,6 +207,11 @@ export const airtableService = {
   },
 
   async deleteRecord(tableName: keyof typeof RECORD_FIELDS, recordId: string): Promise<boolean> {
+    if (!tableName || !recordId) {
+      console.error("Invalid deleteRecord parameters:", tableName, recordId);
+      return false;
+    }
+
     try {
       const response = await fetch(`${AIRTABLE_API_URL}/${tableName}/${recordId}`, {
         method: "DELETE",
@@ -232,6 +233,7 @@ export const airtableService = {
     }
   },
 };
+
 
 
 
